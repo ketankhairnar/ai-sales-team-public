@@ -1,0 +1,22 @@
+{
+  "company": "Neura Robotics",
+  "domain": "neura-robotics.com",
+  "team_page": "https://neura-robotics.com/company/",
+  "scraped_at": "2026-03-25T10:09:16.041154+00:00",
+  "people": [
+    {
+      "name": "Cookie Settings",
+      "title": "Gutenbergstrasse 44, 72555 Metzingen, Germany. Managing Director: David Reger.",
+      "guessed_emails": [
+        "cookie.settings@neura-robotics.com",
+        "cookie@neura-robotics.com",
+        "csettings@neura-robotics.com",
+        "cookiesettings@neura-robotics.com",
+        "settings@neura-robotics.com",
+        "c.settings@neura-robotics.com",
+        "cookie_settings@neura-robotics.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

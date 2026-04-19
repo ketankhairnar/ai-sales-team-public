@@ -1,0 +1,64 @@
+---
+import Base from '../../layouts/Base.astro'
+import { Store } from '../../db/store'
+
+const store = new Store()
+const entries = store.listWaitlist()
+store.close()
+
+const fmt = (iso: string | null) => iso
+  ? new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', hour12: false }) + ' IST'
+  : '—'
+---
+<Base title="waitlist · admin">
+  <div class="dense">
+    <div class="border-b border-border pb-4 flex items-baseline justify-between">
+      <div>
+        <div class="uppercase-label">admin</div>
+        <h1 class="serif mt-1">Waitlist <span class="mono text-2xl text-muted-fg">· {entries.length}</span></h1>
+      </div>
+      <a href="/" class="mono text-xs uppercase tracking-wider text-muted-fg hover:text-fg">← campaigns</a>
+    </div>
+
+    {entries.length === 0 ? (
+      <div class="card body-serif text-muted-fg mt-4">no signups yet.</div>
+    ) : (
+      <div class="mt-4 border-2 border-border">
+        <table class="w-full mono text-xs">
+          <thead>
+            <tr class="border-b-2 border-border bg-muted">
+              <th class="text-left px-3 py-2 uppercase tracking-wider">#</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">email</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">note</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">source</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">status</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">signed up</th>
+              <th class="text-left px-3 py-2 uppercase tracking-wider">notified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e, i) => (
+              <tr class="border-b border-border hover:bg-muted">
+                <td class="px-3 py-2 text-muted-fg">{entries.length - i}</td>
+                <td class="px-3 py-2">
+                  <a href={`mailto:${e.email}`} class="underline decoration-dotted hover:text-accent">{e.email}</a>
+                </td>
+                <td class="px-3 py-2 body-serif text-sm max-w-md truncate" title={e.note ?? ''}>
+                  {e.note || <span class="text-muted-fg">—</span>}
+                </td>
+                <td class="px-3 py-2 text-muted-fg">{e.source ?? '—'}</td>
+                <td class="px-3 py-2">
+                  <span class={`uppercase tracking-wider ${e.status === 'notified' ? 'text-accent' : 'text-muted-fg'}`}>
+                    {e.status}
+                  </span>
+                </td>
+                <td class="px-3 py-2 text-muted-fg">{fmt(e.created_at)}</td>
+                <td class="px-3 py-2 text-muted-fg">{fmt(e.notified_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</Base>

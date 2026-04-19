@@ -1,0 +1,36 @@
+{
+  "company": "EngineAI",
+  "domain": "engineai.com",
+  "team_page": "https://www.engineai.com/about-us",
+  "scraped_at": "2026-03-25T10:03:08.784445+00:00",
+  "people": [
+    {
+      "name": "Collective Intelligence",
+      "title": "We grow through connection. Our strength comes from the diversity of our community \u2013 teammates, clients, and partners who challenge, support, and inspire one another to think bigger and build smarter. We create space for every voice, knowing that great ideas rarely start in silence.",
+      "guessed_emails": [
+        "collective.intelligence@engineai.com",
+        "collective@engineai.com",
+        "cintelligence@engineai.com",
+        "collectiveintelligence@engineai.com",
+        "intelligence@engineai.com",
+        "c.intelligence@engineai.com",
+        "collective_intelligence@engineai.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Cookie Policy",
+      "title": "Cookie Settings",
+      "guessed_emails": [
+        "cookie.policy@engineai.com",
+        "cookie@engineai.com",
+        "cpolicy@engineai.com",
+        "cookiepolicy@engineai.com",
+        "policy@engineai.com",
+        "c.policy@engineai.com",
+        "cookie_policy@engineai.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

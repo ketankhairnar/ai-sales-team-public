@@ -1,0 +1,36 @@
+{
+  "company": "PUDU Robotics",
+  "domain": "pudurobotics.com",
+  "team_page": "https://www.pudurobotics.com/en/company",
+  "scraped_at": "2026-03-25T10:05:57.328699+00:00",
+  "people": [
+    {
+      "name": "Pudu Robotics",
+      "title": "a global leader in the service robotics sector, is dedicated to enhancing human productivity and living standards through innovative robot technology, with a mission to serve 10 billion people worldwide.",
+      "guessed_emails": [
+        "pudu.robotics@pudurobotics.com",
+        "pudu@pudurobotics.com",
+        "probotics@pudurobotics.com",
+        "pudurobotics@pudurobotics.com",
+        "robotics@pudurobotics.com",
+        "p.robotics@pudurobotics.com",
+        "pudu_robotics@pudurobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Jiangsu Factory",
+      "title": "Jiaxing Factory",
+      "guessed_emails": [
+        "jiangsu.factory@pudurobotics.com",
+        "jiangsu@pudurobotics.com",
+        "jfactory@pudurobotics.com",
+        "jiangsufactory@pudurobotics.com",
+        "factory@pudurobotics.com",
+        "j.factory@pudurobotics.com",
+        "jiangsu_factory@pudurobotics.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.env.local
+*.db
+*.db-journal
+tools/**/.cookies.json
+tools/**/.env
+tools/**/accounts.db
+prospects/
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+
+# reference material + local scratch
+ref/
+_archive/
+/tmp/
+.DS_Store
+.cookies.json
+**/.cookies.json

@@ -1,0 +1,186 @@
+{
+  "scraped_at": "2026-03-25T08:44:55.541900+00:00",
+  "source": "https://www.humanoids.fyi/oems",
+  "companies": [
+    {
+      "name": "Tesla",
+      "domain": "tesla.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Figure",
+      "domain": "figure.ai",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Agility Robotics",
+      "domain": "agilityrobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "1X",
+      "domain": "1x.tech",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Boston Dynamics",
+      "domain": "bostondynamics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Sunday Robotics",
+      "domain": "sundayrobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Vibe Robotics",
+      "domain": "viberobotics.co",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Dexmate",
+      "domain": "dexmate.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Sanctuary AI",
+      "domain": "sanctuary.ai",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Foundation Robotics",
+      "domain": "foundationrobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Fauna Robotics",
+      "domain": "faunarobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Pollen Robotics",
+      "domain": "pollen-robotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "PAL Robotics",
+      "domain": "pal-robotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Engineered Arts",
+      "domain": "engineeredarts.co.uk",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Apptronik",
+      "domain": "apptronik.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Unitree",
+      "domain": "unitree.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Booster Robotics",
+      "domain": "boosterrobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "AGIBot",
+      "domain": "agibot.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "XPeng",
+      "domain": "xpeng.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "EngineAI",
+      "domain": "engineai.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "UBTECH",
+      "domain": "ubtrobot.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Fourier Intelligence",
+      "domain": "fftai.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Kepler Robotics",
+      "domain": "keplerbot.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Noetix Robotics",
+      "domain": "noetixrobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Dobot",
+      "domain": "dobot.cc",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "LimX Dynamics",
+      "domain": "limxdynamics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "PUDU Robotics",
+      "domain": "pudurobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Astribot",
+      "domain": "astribot.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "MagicLab",
+      "domain": "magiclab.ai",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Xiaomi",
+      "domain": "xiaomi.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "RobotEra",
+      "domain": "robotera.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "OpenLoong",
+      "domain": "openloong.org.cn",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Mentee Robotics",
+      "domain": "menteebot.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Neura Robotics",
+      "domain": "neura-robotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Clone Robotics",
+      "domain": "clonerobotics.com",
+      "source": "humanoids.fyi/oems"
+    },
+    {
+      "name": "Vanar Robots",
+      "domain": "vanarrobots.com",
+      "source": "humanoids.fyi/oems"
+    }
+  ]
+}

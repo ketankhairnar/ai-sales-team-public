@@ -1,0 +1,193 @@
+---
+import Base from '../layouts/Base.astro'
+import { Store } from '../db/store'
+
+const authed = (Astro.locals as any).authed === true
+
+let campaigns: Awaited<ReturnType<Store['listCampaigns']>> = []
+if (authed) {
+  const store = new Store()
+  campaigns = store.listCampaigns()
+  store.close()
+}
+---
+{authed ? (
+  <Base title="campaigns">
+    <div class="dense">
+      <div class="border-b border-border pb-4">
+        <div class="uppercase-label">all campaigns</div>
+        <h1 class="serif mt-1">Campaigns</h1>
+        <p class="body-serif text-muted-fg mt-2 max-w-2xl">
+          Multi-agent outbound pipelines. Each campaign starts from an ICP, discovers prospects,
+          runs them through scoring, research, draft, and human-gated send.
+        </p>
+        <a href="/solution-sketch.png" target="_blank" class="mono text-xs underline text-muted-fg hover:text-accent mt-3 inline-block">how the ai loop works →</a>
+      </div>
+
+      {campaigns.length === 0 && (
+        <div class="card body-serif text-muted-fg">
+          no campaigns yet. <a href="/new" class="underline">start one from the UI</a>.
+        </div>
+      )}
+
+      <div class="grid gap-3">
+        {campaigns.map((c) => (
+          <a href={`/campaign/${c.id}`} class="card block hover:bg-muted">
+            <div class="flex justify-between items-baseline">
+              <div class="serif text-lg font-semibold">{c.title ?? c.id}</div>
+              <div class="mono text-xs text-muted-fg">{new Date(c.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', hour12: false })} IST</div>
+            </div>
+            <div class="mono text-xs text-muted-fg mt-1 uppercase tracking-wider">
+              {c.id} · {c.prospects.length} prospects · {c.pipeline}
+            </div>
+            <div class="body-serif text-sm mt-2 text-muted-fg line-clamp-2">
+              {JSON.stringify(c.icp)}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </Base>
+) : (
+  <Base title="Outtro — AI sales team that reads the room">
+    <div class="max-w-3xl mx-auto py-12">
+      <div class="border-2 border-border">
+        <div class="border-b-2 border-border px-8 py-5 flex items-center justify-between">
+          <div class="mono text-xs uppercase tracking-[0.15em] text-muted-fg">
+            dispatch · private trial
+          </div>
+          <div class="mono text-xs uppercase tracking-[0.15em] text-accent">
+            waitlist
+          </div>
+        </div>
+
+        <div class="px-8 py-10">
+          <h1 class="serif text-5xl md:text-6xl leading-[1.05] font-semibold tracking-tight">
+            The sales team<br/>
+            that reads the room<br/>
+            <span class="text-muted-fg">before it knocks.</span>
+          </h1>
+
+          <p class="body-serif text-lg mt-8 max-w-xl leading-relaxed">
+            Four agents — Siddharth, Shruti, Vikram, Esha — discover, score,
+            research, draft, and send. They argue with each other before they
+            argue with your prospects.
+          </p>
+
+          <p class="body-serif text-base mt-4 text-muted-fg max-w-xl">
+            Currently in private trial. Drop your email — I'll tell you when it's open.
+          </p>
+
+          <div class="mt-8 flex flex-wrap gap-3 items-center">
+            <button
+              id="enter-app-btn"
+              class="px-8 py-4 border-2 border-accent bg-accent text-accent-fg mono text-sm uppercase tracking-[0.2em] font-semibold hover:bg-fg hover:text-bg hover:border-fg transition-colors"
+            >
+              → Enter the app
+            </button>
+            <a href="/solution-sketch.png" target="_blank" class="mono text-xs uppercase tracking-[0.15em] text-muted-fg underline hover:text-accent">how it works</a>
+          </div>
+          <p class="mono text-xs text-muted-fg mt-2">hint: the password is <code class="px-1 bg-muted">password</code></p>
+
+          <form method="POST" action="/api/waitlist" class="mt-10 grid gap-3 max-w-md" id="waitlist-form">
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="your@email.com"
+              class="px-4 py-3 border-2 border-border bg-background mono text-sm focus:outline-none focus:border-accent"
+            />
+            <input
+              type="text"
+              name="note"
+              maxlength="200"
+              placeholder="what you'd use it for (optional, short)"
+              class="px-4 py-3 border-2 border-border bg-background mono text-sm focus:outline-none focus:border-accent"
+            />
+            <button
+              type="submit"
+              class="mt-1 px-6 py-3 border-2 border-border bg-fg text-bg mono text-xs uppercase tracking-[0.15em] hover:bg-accent hover:border-accent hover:text-accent-fg transition-colors"
+            >
+              join waitlist →
+            </button>
+          </form>
+
+          <div id="waitlist-status" class="mt-4 mono text-xs"></div>
+
+          <div class="mt-10 pt-6 border-t border-border body-serif text-sm text-muted-fg max-w-xl">
+            Want access to the code or a walkthrough of how this was built?
+            Reach out to the author —
+            <a href="mailto:ketan.khairnar@gmail.com" class="underline hover:text-accent">ketan.khairnar@gmail.com</a>.
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-border flex flex-wrap gap-4 mono text-xs uppercase tracking-wider text-muted-fg">
+            <span>— built by ketankhairnar · tacit.sh</span>
+            <a href="/solution-sketch.png" target="_blank" class="underline hover:text-accent">how the ai loop works →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="unlock-modal" class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">
+      <div class="bg-background border-2 border-border p-8 max-w-sm w-full mx-4">
+        <div class="mono text-xs uppercase tracking-[0.15em] text-muted-fg mb-4">private trial access</div>
+        <h2 class="serif text-2xl font-semibold mb-4">Enter password</h2>
+        <form method="POST" action="/live" class="grid gap-3" id="unlock-form">
+          <input
+            type="password"
+            name="k"
+            required
+            autofocus
+            placeholder="password (hint: password)"
+            class="px-4 py-3 border-2 border-border bg-background mono text-sm focus:outline-none focus:border-accent"
+          />
+          <div class="flex gap-2 mt-1">
+            <button type="submit" class="flex-1 px-4 py-3 border-2 border-border bg-fg text-bg mono text-xs uppercase tracking-[0.15em] hover:bg-accent hover:border-accent hover:text-accent-fg transition-colors">unlock →</button>
+            <button type="button" id="unlock-cancel" class="px-4 py-3 border-2 border-border mono text-xs uppercase tracking-[0.15em] hover:bg-muted">cancel</button>
+          </div>
+          <div id="unlock-err" class="mono text-xs text-red-600 hidden">wrong password. hint: the hint is the answer.</div>
+        </form>
+      </div>
+    </div>
+
+    <script is:inline>
+      const modal = document.getElementById('unlock-modal')
+      const modalErr = document.getElementById('unlock-err')
+      const openModal = () => { modal.classList.remove('hidden'); modal.classList.add('flex') }
+      document.getElementById('enter-app-btn')?.addEventListener('click', openModal)
+      document.getElementById('unlock-cancel')?.addEventListener('click', () => {
+        modal.classList.add('hidden'); modal.classList.remove('flex')
+      })
+      if (new URLSearchParams(location.search).get('bad') === '1') {
+        modal.classList.remove('hidden'); modal.classList.add('flex')
+        modalErr.classList.remove('hidden')
+      }
+
+      const form = document.getElementById('waitlist-form')
+      const status = document.getElementById('waitlist-status')
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const fd = new FormData(form)
+        status.textContent = 'sending...'
+        status.className = 'mt-4 mono text-xs text-muted-fg'
+        try {
+          const r = await fetch('/api/waitlist', { method: 'POST', body: fd })
+          const data = await r.json().catch(() => ({}))
+          if (r.ok) {
+            status.textContent = data.existed
+              ? '✓ already on the list — resent confirmation to your inbox'
+              : '✓ you\'re on the list — check your inbox'
+            status.className = 'mt-4 mono text-xs text-accent'
+            form.reset()
+          } else {
+            status.textContent = '✗ ' + (data.error ?? 'something broke. try again')
+            status.className = 'mt-4 mono text-xs text-red-600'
+          }
+        } catch (err) {
+          status.textContent = '✗ network error'
+          status.className = 'mt-4 mono text-xs text-red-600'
+        }
+      })
+    </script>
+  </Base>
+)}

@@ -1,0 +1,128 @@
+---
+import Base from '../../layouts/Base.astro'
+import { Store } from '../../db/store'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/')
+
+const store = new Store()
+const campaign = store.getCampaign(id)
+if (!campaign) { store.close(); return new Response('campaign not found', { status: 404 }) }
+const prospects = store.listProspects(id)
+store.close()
+
+const selected = Astro.url.searchParams.get('p') ?? ''
+const panelUrl = `/campaign/${encodeURIComponent(id)}/panel${selected ? `?p=${encodeURIComponent(selected)}` : ''}`
+const boardUrl = `/campaign/${encodeURIComponent(id)}/board${selected ? `?p=${encodeURIComponent(selected)}` : ''}`
+
+const totalDiscovered = prospects.length
+const sentCount = prospects.filter(p => p.stages.sent?.status === 'passed').length
+const awaitingHuman = prospects.filter(p => p.stages.drafted?.status === 'awaiting_human').length
+---
+<Base title={campaign.title ?? `campaign ${id}`}>
+  <div class="dense">
+    {/* Wire-service dispatch */}
+    <div class="wire-summary">
+      <span class="wire-tag">DISPATCH</span>
+      <span class="font-semibold">{campaign.title ?? id}</span> · {totalDiscovered} prospects · <span class={sentCount > 0 ? 'dot-hot' : ''}>{sentCount} sent</span>{awaitingHuman > 0 && <> · <span class="dot-hot">{awaitingHuman} awaiting approve</span></>} · {new Date(campaign.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', hour12: false })} IST · <span class="mono text-[10px] uppercase text-muted-fg">live · 3s</span>
+    </div>
+
+    {/* Header */}
+    <div class="flex justify-between items-baseline">
+      <div>
+        <div class="uppercase-label">campaign · {id}</div>
+        <h1 class="serif mt-1">{campaign.title ?? id}</h1>
+      </div>
+      <div class="flex gap-2">
+        <a href="/" class="btn btn-ghost">← campaigns</a>
+      </div>
+    </div>
+
+    {/* ICP banner */}
+    <div class="card card-muted">
+      <div class="uppercase-label">ideal customer profile</div>
+      <div class="body-serif mt-1 text-base">
+        {Object.entries(campaign.icp ?? {}).map(([k, v], i) => (
+          <>
+            {i > 0 && <span class="text-muted-fg mx-2">·</span>}
+            <span class="mono text-xs uppercase text-muted-fg">{k}:</span>
+            <span class="ml-1">{Array.isArray(v) ? v.join(', ') : String(v)}</span>
+          </>
+        ))}
+      </div>
+    </div>
+
+    {/* Split: kanban left, panel right */}
+    <div class="grid gap-6" style="grid-template-columns: minmax(0,1fr) 360px;">
+      <div
+        id="board"
+        hx-get={boardUrl}
+        hx-trigger="load, every 3s"
+        hx-swap="innerHTML"
+      >
+        <div class="mono text-xs text-muted-fg italic p-4">loading board…</div>
+      </div>
+
+      <aside
+        id="panel"
+        class="card sticky top-4 self-start"
+        hx-get={panelUrl}
+        hx-trigger="load, every 3s"
+        hx-swap="innerHTML"
+      >
+        <div class="mono text-xs text-muted-fg italic">loading panel…</div>
+      </aside>
+    </div>
+  </div>
+
+  {/* Outcome modal */}
+  <div id="outcome-modal" class="hidden fixed inset-0 bg-black/60 items-center justify-center z-50">
+    <div class="card bg-bg max-w-md w-full mx-4">
+      <div class="flex justify-between items-baseline">
+        <div class="uppercase-label">record outcome</div>
+        <button type="button" class="mono text-xs" onclick="window.__closeOutcomeModal()">close</button>
+      </div>
+      <form id="outcome-form" method="POST" action="/api/outcome" class="mt-3 space-y-3">
+        <input type="hidden" name="prospect_id" id="outcome-prospect" />
+        <input type="hidden" name="outcome" id="outcome-kind" />
+        <input type="hidden" name="campaign_id" id="outcome-campaign" />
+        <div>
+          <label class="uppercase-label block">reason</label>
+          <select name="reason_code" required class="input mt-1 w-full">
+            <option value="">— select —</option>
+            <option value="not_icp">not ICP</option>
+            <option value="wrong_timing">wrong timing</option>
+            <option value="no_reply">no reply</option>
+            <option value="budget_freeze">budget freeze</option>
+            <option value="duplicate">duplicate</option>
+            <option value="other">other</option>
+          </select>
+        </div>
+        <div>
+          <label class="uppercase-label block">note (optional)</label>
+          <textarea name="reason_note" rows="3" class="input mt-1 w-full body-serif"></textarea>
+        </div>
+        <div class="flex gap-2 justify-end">
+          <button type="button" class="btn btn-ghost" onclick="window.__closeOutcomeModal()">cancel</button>
+          <button type="submit" class="btn btn-accent">confirm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script is:inline>
+    window.__openOutcomeModal = function (btn) {
+      const modal = document.getElementById('outcome-modal')
+      document.getElementById('outcome-prospect').value = btn.dataset.prospect
+      document.getElementById('outcome-kind').value = btn.dataset.outcome
+      document.getElementById('outcome-campaign').value = btn.dataset.campaign
+      modal.classList.remove('hidden')
+      modal.classList.add('flex')
+    }
+    window.__closeOutcomeModal = function () {
+      const modal = document.getElementById('outcome-modal')
+      modal.classList.add('hidden')
+      modal.classList.remove('flex')
+    }
+  </script>
+</Base>

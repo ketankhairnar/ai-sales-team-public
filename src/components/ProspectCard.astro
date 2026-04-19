@@ -1,0 +1,95 @@
+---
+import type { Prospect } from '../dsl/envelope'
+import HandoffChip from './HandoffChip.astro'
+import { stageAge, prospectScore } from '../runtime/board-view'
+const { prospect, selected = false, campaignId } = Astro.props as { prospect: Prospect; selected?: boolean; campaignId?: string }
+
+const score = prospectScore(prospect)
+const draft = prospect.stages.drafted?.final_output as { subject?: string } | undefined
+const sentOk = prospect.stages.sent?.status === 'passed'
+const awaitingHuman = prospect.stages.drafted?.status === 'awaiting_human'
+const age = stageAge(prospect)
+const outcome = prospect.outcome
+
+// Find first rejected stage (for visible banner)
+const rejectedStage = (['scored', 'researched', 'drafted', 'sent'] as const)
+  .map(id => ({ id, env: prospect.stages[id] }))
+  .find(s => s.env?.status === 'rejected')
+const rejectReason = rejectedStage?.env?.reject_reason ?? null
+
+const stageIcons = (id: string) => {
+  const env = prospect.stages[id]
+  if (!env) return '·'
+  if (env.status === 'passed') return '✓'
+  if (env.status === 'rejected') return '✗'
+  if (env.status === 'awaiting_human') return '?'
+  return '…'
+}
+const stageClass = (id: string) => {
+  const env = prospect.stages[id]
+  if (!env) return 'text-muted-fg'
+  if (env.status === 'passed') return 'text-fg font-semibold'
+  if (env.status === 'rejected') return 'text-muted-fg line-through'
+  if (env.status === 'awaiting_human') return 'text-accent font-semibold'
+  return 'text-muted-fg'
+}
+
+// Link selects prospect in panel via ?p=
+const href = campaignId
+  ? `/campaign/${encodeURIComponent(campaignId)}?p=${encodeURIComponent(prospect.id)}`
+  : `/prospect/${encodeURIComponent(prospect.id)}`
+---
+<a
+  href={href}
+  class={`card block hover:border-accent ${score && score >= 8 ? 'card-hot' : ''} ${selected ? 'border-accent border-2' : ''} ${outcome ? 'opacity-70' : ''}`}
+>
+  <div class="flex justify-between items-baseline gap-2">
+    <div class="serif font-semibold text-base truncate">{prospect.name}</div>
+    <div class="flex gap-1 items-baseline shrink-0">
+      {age && <span class="mono text-[10px] text-muted-fg uppercase" title="stage age">{age}</span>}
+      {typeof score === 'number' && (
+        <span class={`mono text-xs ${score >= 8 ? 'dot-hot font-semibold' : 'text-muted-fg'}`}>
+          {score}/10
+        </span>
+      )}
+    </div>
+  </div>
+  <div class="mono text-xs text-muted-fg truncate mt-0.5">
+    {prospect.title}{prospect.company && ` · ${prospect.company}`}
+  </div>
+
+  <div class="mono text-[10px] mt-2 flex gap-2 uppercase tracking-wider">
+    <span class={stageClass('discovered')} title="discovered">{stageIcons('discovered')} disc</span>
+    <span class={stageClass('scored')} title="scored">{stageIcons('scored')} score</span>
+    <span class={stageClass('researched')} title="researched">{stageIcons('researched')} res</span>
+    <span class={stageClass('drafted')} title="drafted">{stageIcons('drafted')} draft</span>
+    <span class={stageClass('sent')} title="sent">{stageIcons('sent')} sent</span>
+  </div>
+
+  {rejectedStage && (
+    <div class="mt-2 border-t-2 border-red-600 pt-2 mono text-[10px] uppercase tracking-wider">
+      <span class="text-red-700 font-semibold">✗ rejected at {rejectedStage.id}</span>
+      {rejectReason && (
+        <div class="mt-1 body-serif text-[11px] normal-case text-red-900 line-clamp-2" title={rejectReason}>
+          {rejectReason}
+        </div>
+      )}
+    </div>
+  )}
+
+  {draft?.subject && !rejectedStage && (
+    <div class="body-serif text-xs italic mt-2 text-muted-fg line-clamp-2">“{draft.subject}”</div>
+  )}
+
+  {awaitingHuman && (
+    <div class="mt-2"><HandoffChip kind="human" verb="awaiting approve" /></div>
+  )}
+  {sentOk && (
+    <div class="mt-2"><HandoffChip kind="pass" verb="sent" /></div>
+  )}
+  {outcome && (
+    <div class="mt-2 mono text-[10px] uppercase tracking-wider text-muted-fg">
+      {outcome}{prospect.outcome_reason && ` · ${prospect.outcome_reason}`}
+    </div>
+  )}
+</a>

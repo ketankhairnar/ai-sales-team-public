@@ -1,0 +1,64 @@
+{
+  "company": "Sanctuary AI",
+  "domain": "sanctuary.ai",
+  "team_page": "https://www.sanctuary.ai/about",
+  "scraped_at": "2026-03-25T10:00:12.382634+00:00",
+  "people": [
+    {
+      "name": "ACCEPT ALL",
+      "title": "MANAGE COOKIES",
+      "guessed_emails": [
+        "accept.all@sanctuary.ai",
+        "accept@sanctuary.ai",
+        "aall@sanctuary.ai",
+        "acceptall@sanctuary.ai",
+        "all@sanctuary.ai",
+        "a.all@sanctuary.ai",
+        "accept_all@sanctuary.ai"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "James Wells",
+      "title": "Chief Executive Officer",
+      "guessed_emails": [
+        "james.wells@sanctuary.ai",
+        "james@sanctuary.ai",
+        "jwells@sanctuary.ai",
+        "jameswells@sanctuary.ai",
+        "wells@sanctuary.ai",
+        "j.wells@sanctuary.ai",
+        "james_wells@sanctuary.ai"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Olivia Norton",
+      "title": "Co-Founder, CTO & CPO",
+      "guessed_emails": [
+        "olivia.norton@sanctuary.ai",
+        "olivia@sanctuary.ai",
+        "onorton@sanctuary.ai",
+        "olivianorton@sanctuary.ai",
+        "norton@sanctuary.ai",
+        "o.norton@sanctuary.ai",
+        "olivia_norton@sanctuary.ai"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "If You Missed Messe",
+      "title": "Hannover Messe is one of the world\u2019s largest industrial tradeshows, showcasing innovations in manufacturing, automation, energy, and digitalization. Sanctuary AI had the pleasure of accompanying Microsoft to Messe 2025 \u2026",
+      "guessed_emails": [
+        "if.messe@sanctuary.ai",
+        "if@sanctuary.ai",
+        "imesse@sanctuary.ai",
+        "ifmesse@sanctuary.ai",
+        "messe@sanctuary.ai",
+        "i.messe@sanctuary.ai",
+        "if_messe@sanctuary.ai"
+      ],
+      "verified": {}
+    }
+  ]
+}

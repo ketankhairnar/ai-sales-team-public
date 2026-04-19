@@ -1,0 +1,451 @@
+---
+export const partial = true
+import { Store } from '../../../db/store'
+import { stageAge, prospectScore, whyQualifies } from '../../../runtime/board-view'
+
+const { id } = Astro.params
+if (!id) return new Response('missing id', { status: 400 })
+const prospectId = Astro.url.searchParams.get('p') ?? ''
+
+if (!prospectId) {
+  return new Response(
+    `<div class="mono text-xs text-muted-fg italic p-4">click a card to inspect</div>`,
+    { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } },
+  )
+}
+
+const store = new Store()
+const prospect = store.getProspect(prospectId)
+const events = prospect ? store.listEvents(id, { prospectId, limit: 100 }) : []
+const humanInputs = prospect ? store.listHumanInputs(prospectId) : []
+store.close()
+
+if (!prospect) {
+  return new Response(`<div class="mono text-xs text-muted-fg italic p-4">prospect not found</div>`,
+    { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } })
+}
+
+const score = prospectScore(prospect)
+const age = stageAge(prospect)
+const reasons = whyQualifies(prospect)
+const draft = prospect.stages.drafted?.final_output as { subject?: string; body?: string } | undefined
+const awaitingApprove = prospect.stages.drafted?.status === 'awaiting_human'
+const terminal = !!prospect.outcome
+
+// M/C/A commentary: reconstruct per-stage, per-iteration reasoning from attempt events.
+type Attempt = {
+  iter: number
+  maker?: { persona?: string; output?: any; at?: string }
+  checker?: { persona?: string; result?: any; at?: string }
+  arbiter?: { persona?: string; decision?: any; at?: string }
+}
+type StageMCA = { stage_id: string; rubric?: string; final_status?: string; attempts: Attempt[] }
+
+const mcaByStage: Record<string, StageMCA> = {}
+const stageTransitions: Array<{ from: string; to: string; at: string }> = []
+for (const e of events as any[]) {
+  if (e.kind === 'attempt' && e.stage_id && e.attempt) {
+    const sid = e.stage_id as string
+    mcaByStage[sid] ??= { stage_id: sid, attempts: [] }
+    const a = e.attempt as Attempt
+    const existing = mcaByStage[sid].attempts.find(x => x.iter === a.iter)
+    if (existing) {
+      Object.assign(existing, { ...existing, ...a })
+    } else {
+      mcaByStage[sid].attempts.push(a)
+    }
+  } else if (e.kind === 'stage_advance') {
+    stageTransitions.push({ from: e.from ?? '', to: e.to ?? '', at: e.at ?? '' })
+  }
+}
+// quick lookup: advance into stage
+const advanceInto = (stageId: string) => stageTransitions.find(t => t.to === stageId)
+// Annotate final status from stored envelope status
+for (const sid of Object.keys(mcaByStage)) {
+  mcaByStage[sid].final_status = prospect.stages[sid]?.status
+}
+// Stable order: pipeline stage order
+const MCA_STAGE_ORDER = ['scored', 'drafted']
+const mcaStages = MCA_STAGE_ORDER
+  .map(sid => mcaByStage[sid])
+  .filter((s): s is StageMCA => !!s && s.attempts.length > 0)
+
+// Pull real rubric guides from modules so panel shows what each dim means.
+import { SCORE_RUBRIC } from '../../../../rubrics/score'
+import { DRAFT_RUBRIC } from '../../../../rubrics/draft'
+const STAGE_RUBRIC: Record<string, { name: string; dims: { dim: string; guide: string }[] }> = {
+  scored:  { name: 'score rubric',  dims: SCORE_RUBRIC },
+  drafted: { name: 'draft rubric',  dims: DRAFT_RUBRIC },
+}
+const rubricGuide = (stageId: string, dim: string): string => {
+  return STAGE_RUBRIC[stageId]?.dims.find(d => d.dim === dim)?.guide ?? ''
+}
+
+// Time formatting — show IST (Asia/Kolkata) for Indian-audience-first demo.
+function fmtIST(iso?: string): string {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', minute: '2-digit',
+      day: '2-digit', month: 'short',
+      hour12: false,
+    }) + ' IST'
+  } catch { return iso.slice(11, 16) }
+}
+function fmtISTtime(iso?: string): string {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', minute: '2-digit',
+      hour12: false,
+    })
+  } catch { return iso.slice(11, 16) }
+}
+
+// Persona labels — short friendly
+const PERSONA_SHORT: Record<string, string> = {
+  'SDR-Siddharth': 'Siddharth (Maker)',
+  'Skeptic-Shruti': 'Shruti (Checker)',
+  'VPSales-Vikram': 'Vikram (Arbiter)',
+  'Editor-Esha': 'Esha (Checker)',
+  'VPSales-Vikram-Arbiter': 'Vikram (Arbiter)',
+}
+function personaLabel(p?: string, fallback = '?'): string {
+  return PERSONA_SHORT[p ?? ''] ?? p ?? fallback
+}
+---
+<div class="space-y-4">
+  {/* How the AI loop works — link to sketchnote */}
+  <div class="mono text-[10px] uppercase tracking-wider text-muted-fg">
+    <a href="/solution-sketch.png" target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">How the AI loop works →</a>
+  </div>
+  {/* Summary */}
+  <div>
+    <div class="flex justify-between items-baseline">
+      <div>
+        <div class="uppercase-label">prospect</div>
+        <h2 class="serif text-xl mt-0.5">{prospect.name}</h2>
+      </div>
+      <div class="flex gap-2 items-baseline">
+        {age && <span class="mono text-[10px] uppercase text-muted-fg" title="stage age">{age}</span>}
+        {typeof score === 'number' && <span class={`mono text-sm ${score >= 8 ? 'dot-hot font-semibold' : ''}`}>{score}/10</span>}
+      </div>
+    </div>
+    <div class="mono text-xs text-muted-fg mt-1">{prospect.title}{prospect.company && ` · ${prospect.company}`}</div>
+    <div class="mono text-[11px] uppercase tracking-wider mt-1 text-muted-fg">stage: <span class="text-fg">{prospect.current_stage}</span>{prospect.outcome && ` · outcome: ${prospect.outcome}`}</div>
+  </div>
+
+  {/* Why qualifies */}
+  {reasons.length > 0 && (
+    <div>
+      <div class="uppercase-label">why this qualifies</div>
+      <ul class="body-serif text-sm mt-1 space-y-1">
+        {reasons.map((r) => <li class="before:content-['·'] before:mr-1.5 before:text-muted-fg">{r}</li>)}
+      </ul>
+    </div>
+  )}
+
+  {/* Agent transcript */}
+  {mcaStages.length > 0 && (
+    <div data-mca-panel>
+      <div class="uppercase-label flex items-baseline justify-between">
+        <span>agent transcript</span>
+        <span class="mono text-[9px] normal-case tracking-normal text-muted-fg">
+          ctrl+E · toggle prompts
+        </span>
+      </div>
+      <div class="mt-2 space-y-4">
+        {mcaStages.map((s) => {
+          const rubric = STAGE_RUBRIC[s.stage_id]
+          const advance = advanceInto(s.stage_id)
+          return (
+          <div class="border border-border">
+            <div class="px-2 py-1.5 flex items-baseline justify-between border-b border-border bg-muted">
+              <span class="mono text-xs uppercase tracking-wider font-semibold">{s.stage_id}</span>
+              <span class="mono text-[10px] text-muted-fg">
+                {s.attempts.length} iter · <span class={s.final_status === 'passed' ? 'text-fg font-semibold' : s.final_status === 'rejected' ? 'text-muted-fg line-through' : 'text-muted-fg'}>{s.final_status ?? '—'}</span>
+                {advance && <span class="ml-2">· entered {fmtISTtime(advance.at)}</span>}
+              </span>
+            </div>
+            <div class="px-2 py-2 space-y-3">
+
+              {/* Rubric dimensions with guides (collapsed by default) */}
+              {rubric && (
+                <details class="border-l-2 border-accent pl-2">
+                  <summary class="cursor-pointer mono text-[10px] uppercase tracking-wider text-accent">
+                    {rubric.name} — {rubric.dims.length} dims (click to see guides)
+                  </summary>
+                  <ul class="mt-1.5 space-y-1.5 body-serif text-[11px]">
+                    {rubric.dims.map((d) => (
+                      <li>
+                        <div class="mono text-[10px] uppercase text-fg font-semibold">{d.dim}</div>
+                        <div class="text-muted-fg">{d.guide}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
+              {s.attempts.map((a) => {
+                const ck = (a.checker?.result ?? {}) as any
+                const ar = (a.arbiter?.decision ?? {}) as any
+                const mo = (a.maker?.output ?? {}) as any
+                const mscore = mo?.score
+                const dimScores: any = ck?.dimension_scores ?? {}
+                const didCheckerPass = !!ck?.pass
+                const arbDecision = ar?.decision as string | undefined
+                const outcomeLabel = ck?.pass ? 'checker pass → advanced' : arbDecision === 'pass' ? 'arbiter override → advanced' : arbDecision === 'revise' ? 'arbiter said revise → next iter' : arbDecision === 'reject' ? 'arbiter reject → stop' : ''
+                return (
+                  <div class="space-y-2">
+                    <div class="mono text-[10px] uppercase tracking-wider text-muted-fg border-t border-border pt-2">
+                      iteration {a.iter}
+                    </div>
+
+                    {/* Maker node */}
+                    {a.maker && (
+                      <div class="pl-2 border-l-2 border-accent space-y-1">
+                        <div class="flex items-baseline gap-2">
+                          <span class="mono text-[10px] text-accent font-semibold">{personaLabel(a.maker.persona, 'maker')}</span>
+                          <span class="mono text-[9px] uppercase text-muted-fg">MAKER</span>
+                          {a.maker.at && <span class="mono text-[9px] text-muted-fg ml-auto">{fmtISTtime(a.maker.at)}</span>}
+                        </div>
+                        {/* Prompt — shown only when cmd+E toggled */}
+                        {a.maker.prompt && (
+                          <details class="js-prompt-details">
+                            <summary class="cursor-pointer mono text-[9px] uppercase tracking-wider text-muted-fg hover:text-fg">
+                              prompt sent
+                            </summary>
+                            <pre class="body-serif text-[10px] whitespace-pre-wrap text-muted-fg border-l border-border pl-2 mt-1 max-h-48 overflow-y-auto">{a.maker.prompt}</pre>
+                          </details>
+                        )}
+                        {/* Output */}
+                        <div>
+                          {typeof mscore === 'number' && <div class="mono text-xs font-semibold">score: {mscore}/10</div>}
+                          {Array.isArray(mo.reasons) && mo.reasons.length > 0 && (
+                            <ul class="body-serif text-xs space-y-0.5 text-muted-fg">
+                              {(mo.reasons as string[]).map((r) => (
+                                <li class="before:content-['·'] before:mr-1 before:text-muted-fg">{r}</li>
+                              ))}
+                            </ul>
+                          )}
+                          {mo.subject && (
+                            <div class="body-serif text-xs italic text-muted-fg">“{mo.subject}”</div>
+                          )}
+                          {mo.body && (
+                            <details class="mt-0.5">
+                              <summary class="cursor-pointer mono text-[9px] uppercase text-muted-fg">full body</summary>
+                              <pre class="body-serif text-[11px] whitespace-pre-wrap mt-1 text-muted-fg">{mo.body}</pre>
+                            </details>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* arrow */}
+                    {a.maker && a.checker && (
+                      <div class="pl-2 mono text-[10px] text-muted-fg">↓ handed to checker</div>
+                    )}
+
+                    {/* Checker node */}
+                    {a.checker && (
+                      <div class="pl-2 border-l-2 border-accent space-y-1">
+                        <div class="flex items-baseline gap-2">
+                          <span class="mono text-[10px] text-accent font-semibold">{personaLabel(a.checker.persona, 'checker')}</span>
+                          <span class="mono text-[9px] uppercase text-muted-fg">CHECKER</span>
+                          <span class={`mono text-[10px] uppercase ${ck.pass ? 'text-fg font-semibold' : 'text-muted-fg'}`}>
+                            {ck.pass ? '✓ pass' : '✗ fail'}{typeof ck.overall_score === 'number' ? ` · ${ck.overall_score}/10` : ''}
+                          </span>
+                          {a.checker.at && <span class="mono text-[9px] text-muted-fg ml-auto">{fmtISTtime(a.checker.at)}</span>}
+                        </div>
+                        {a.checker.prompt && (
+                          <details class="js-prompt-details">
+                            <summary class="cursor-pointer mono text-[9px] uppercase tracking-wider text-muted-fg hover:text-fg">
+                              prompt sent
+                            </summary>
+                            <pre class="body-serif text-[10px] whitespace-pre-wrap text-muted-fg border-l border-border pl-2 mt-1 max-h-48 overflow-y-auto">{a.checker.prompt}</pre>
+                          </details>
+                        )}
+                        {/* Per-dim scores */}
+                        {Object.keys(dimScores).length > 0 && (
+                          <ul class="body-serif text-[11px] space-y-0.5">
+                            {Object.entries(dimScores).map(([dim, score]) => {
+                              const guide = rubricGuide(s.stage_id, dim)
+                              return (
+                                <li class="flex gap-2 items-baseline">
+                                  <span class="mono text-[10px] uppercase text-muted-fg w-28 shrink-0">{dim}</span>
+                                  <span class={`mono text-[11px] w-10 shrink-0 ${score >= 8 ? 'font-semibold text-fg' : score < 6 ? 'text-muted-fg' : ''}`}>{score}/10</span>
+                                  {guide && <span class="text-muted-fg text-[10px] italic truncate" title={guide}>{guide.split('.')[0]}.</span>}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        )}
+                        {Array.isArray(ck.issues) && ck.issues.length > 0 && (
+                          <div class="mt-1">
+                            <span class="mono text-[9px] uppercase text-muted-fg">issues:</span>
+                            <ul class="body-serif text-[11px] text-muted-fg">
+                              {ck.issues.map((s: string) => <li class="before:content-['·'] before:mr-1">{s}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                        {Array.isArray(ck.suggestions) && ck.suggestions.length > 0 && (
+                          <div class="mt-1">
+                            <span class="mono text-[9px] uppercase text-muted-fg">suggestions:</span>
+                            <ul class="body-serif text-[11px] text-muted-fg">
+                              {ck.suggestions.map((s: string) => <li class="before:content-['·'] before:mr-1">{s}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* arrow */}
+                    {a.checker && a.arbiter && (
+                      <div class="pl-2 mono text-[10px] text-muted-fg">↓ handed to arbiter</div>
+                    )}
+
+                    {/* Arbiter node */}
+                    {a.arbiter && (
+                      <div class="pl-2 border-l-2 border-accent space-y-1">
+                        <div class="flex items-baseline gap-2">
+                          <span class="mono text-[10px] text-accent font-semibold">{personaLabel(a.arbiter.persona, 'arbiter')}</span>
+                          <span class="mono text-[9px] uppercase text-muted-fg">ARBITER</span>
+                          <span class={`mono text-[10px] uppercase font-semibold ${arbDecision === 'pass' ? 'text-fg' : arbDecision === 'reject' ? 'text-muted-fg line-through' : 'text-accent'}`}>
+                            {arbDecision ?? '—'}
+                          </span>
+                          {a.arbiter.at && <span class="mono text-[9px] text-muted-fg ml-auto">{fmtISTtime(a.arbiter.at)}</span>}
+                        </div>
+                        {a.arbiter.prompt && (
+                          <details class="js-prompt-details">
+                            <summary class="cursor-pointer mono text-[9px] uppercase tracking-wider text-muted-fg hover:text-fg">
+                              prompt sent
+                            </summary>
+                            <pre class="body-serif text-[10px] whitespace-pre-wrap text-muted-fg border-l border-border pl-2 mt-1 max-h-48 overflow-y-auto">{a.arbiter.prompt}</pre>
+                          </details>
+                        )}
+                        {ar.reason && (
+                          <div class="body-serif text-xs text-muted-fg">{ar.reason}</div>
+                        )}
+                        {Array.isArray(ar.feedback_for_maker) && ar.feedback_for_maker.length > 0 && (
+                          <div class="mt-1">
+                            <span class="mono text-[9px] uppercase text-muted-fg">feedback for maker (next iter):</span>
+                            <ul class="body-serif text-[11px] text-muted-fg">
+                              {ar.feedback_for_maker.map((s: string) => <li class="before:content-['·'] before:mr-1">{s}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Outcome strip */}
+                    {outcomeLabel && (
+                      <div class="mono text-[10px] uppercase tracking-wider text-muted-fg border-t border-dashed border-border pt-1 text-right">
+                        {outcomeLabel}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Stage-terminal strip */}
+              {s.final_status === 'passed' && (
+                <div class="mono text-[10px] uppercase tracking-wider border-t border-border pt-2 text-fg font-semibold">
+                  → advanced out of {s.stage_id}
+                </div>
+              )}
+              {s.final_status === 'rejected' && (
+                <div class="mono text-[10px] uppercase tracking-wider border-t border-border pt-2 text-muted-fg">
+                  ✗ rejected at {s.stage_id}
+                </div>
+              )}
+            </div>
+          </div>
+          )
+        })}
+      </div>
+      <script is:inline>
+        (function(){
+          if (window.__mcaShortcutBound) return
+          window.__mcaShortcutBound = true
+          document.addEventListener('keydown', function(e){
+            if (!e.ctrlKey || (e.key !== 'e' && e.key !== 'E')) return
+            e.preventDefault()
+            const panel = document.querySelector('[data-mca-panel]')
+            if (!panel) return
+            const all = panel.querySelectorAll('details.js-prompt-details')
+            if (all.length === 0) return
+            const anyOpen = Array.from(all).some(d => d.open)
+            all.forEach(d => d.open = !anyOpen)
+          })
+        })()
+      </script>
+    </div>
+  )}
+
+  {/* Draft preview */}
+  {draft?.subject && (
+    <div class="card card-muted">
+      <div class="uppercase-label">draft</div>
+      <div class="body-serif text-sm font-semibold mt-1">{draft.subject}</div>
+      {draft.body && <pre class="body-serif text-xs whitespace-pre-wrap mt-2 text-muted-fg">{draft.body}</pre>}
+    </div>
+  )}
+
+  {/* Quick actions */}
+  <div class="flex flex-wrap gap-2">
+    {awaitingApprove && !terminal && (
+      <form method="POST" action="/api/approve" class="contents">
+        <input type="hidden" name="prospect_id" value={prospect.id} />
+        <button class="btn btn-accent" type="submit">approve & send</button>
+      </form>
+    )}
+    <a href={`/prospect/${encodeURIComponent(prospect.id)}`} class="btn btn-ghost">full detail</a>
+    {!terminal && (
+      <>
+        <button
+          class="btn btn-ghost"
+          data-outcome="lost"
+          data-prospect={prospect.id}
+          data-campaign={id}
+          onclick="window.__openOutcomeModal(this)"
+        >mark lost</button>
+        <button
+          class="btn btn-ghost"
+          data-outcome="parked"
+          data-prospect={prospect.id}
+          data-campaign={id}
+          onclick="window.__openOutcomeModal(this)"
+        >park</button>
+      </>
+    )}
+  </div>
+
+  {/* Timeline */}
+  <div>
+    <div class="uppercase-label">timeline</div>
+    <ol class="mt-2 space-y-1 mono text-[11px]">
+      {events.slice(-20).reverse().map((e: any) => (
+        <li class="flex gap-2">
+          <span class="text-muted-fg shrink-0 w-16">{fmtISTtime(e.at)}</span>
+          <span class="uppercase tracking-wider shrink-0 w-24 text-muted-fg">{e.kind}</span>
+          <span class="truncate">{e.stage_id ?? e.to ?? ''}{e.reason ? ` — ${e.reason}` : ''}</span>
+        </li>
+      ))}
+      {events.length === 0 && <li class="text-muted-fg italic">no events</li>}
+    </ol>
+  </div>
+
+  {/* Human inputs */}
+  {humanInputs.length > 0 && (
+    <div>
+      <div class="uppercase-label">human inputs</div>
+      <ul class="mt-1 mono text-[11px] space-y-1">
+        {humanInputs.map((h: any) => (
+          <li><span class="uppercase">{h.kind}</span> · {h.author?.name} · {fmtISTtime(h.at)}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>

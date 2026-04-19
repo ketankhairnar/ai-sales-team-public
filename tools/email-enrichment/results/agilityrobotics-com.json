@@ -1,0 +1,120 @@
+{
+  "company": "Agility Robotics",
+  "domain": "agilityrobotics.com",
+  "team_page": "https://www.agilityrobotics.com/company",
+  "scraped_at": "2026-03-25T09:57:22.310355+00:00",
+  "people": [
+    {
+      "name": "Peggy Johnson",
+      "title": "CEO",
+      "guessed_emails": [
+        "peggy.johnson@agilityrobotics.com",
+        "peggy@agilityrobotics.com",
+        "pjohnson@agilityrobotics.com",
+        "peggyjohnson@agilityrobotics.com",
+        "johnson@agilityrobotics.com",
+        "p.johnson@agilityrobotics.com",
+        "peggy_johnson@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Pras Velagapudi",
+      "title": "Chief Technology Officer",
+      "guessed_emails": [
+        "pras.velagapudi@agilityrobotics.com",
+        "pras@agilityrobotics.com",
+        "pvelagapudi@agilityrobotics.com",
+        "prasvelagapudi@agilityrobotics.com",
+        "velagapudi@agilityrobotics.com",
+        "p.velagapudi@agilityrobotics.com",
+        "pras_velagapudi@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Daniel Diez",
+      "title": "Chief Business Officer",
+      "guessed_emails": [
+        "daniel.diez@agilityrobotics.com",
+        "daniel@agilityrobotics.com",
+        "ddiez@agilityrobotics.com",
+        "danieldiez@agilityrobotics.com",
+        "diez@agilityrobotics.com",
+        "d.diez@agilityrobotics.com",
+        "daniel_diez@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Jonathan Hurst",
+      "title": "Co-Founder & \u2028Chief Robot Officer",
+      "guessed_emails": [
+        "jonathan.hurst@agilityrobotics.com",
+        "jonathan@agilityrobotics.com",
+        "jhurst@agilityrobotics.com",
+        "jonathanhurst@agilityrobotics.com",
+        "hurst@agilityrobotics.com",
+        "j.hurst@agilityrobotics.com",
+        "jonathan_hurst@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Jennifer Hunter",
+      "title": "Chief Financial & \u2028Operating Officer",
+      "guessed_emails": [
+        "jennifer.hunter@agilityrobotics.com",
+        "jennifer@agilityrobotics.com",
+        "jhunter@agilityrobotics.com",
+        "jenniferhunter@agilityrobotics.com",
+        "hunter@agilityrobotics.com",
+        "j.hunter@agilityrobotics.com",
+        "jennifer_hunter@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Ana Lang",
+      "title": "Chief Legal & People Officer",
+      "guessed_emails": [
+        "ana.lang@agilityrobotics.com",
+        "ana@agilityrobotics.com",
+        "alang@agilityrobotics.com",
+        "analang@agilityrobotics.com",
+        "lang@agilityrobotics.com",
+        "a.lang@agilityrobotics.com",
+        "ana_lang@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Damion Shelton",
+      "title": "Co-Founder & Chairman of the Board",
+      "guessed_emails": [
+        "damion.shelton@agilityrobotics.com",
+        "damion@agilityrobotics.com",
+        "dshelton@agilityrobotics.com",
+        "damionshelton@agilityrobotics.com",
+        "shelton@agilityrobotics.com",
+        "d.shelton@agilityrobotics.com",
+        "damion_shelton@agilityrobotics.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Marco Marroquin",
+      "title": "Chief Hardware Officer",
+      "guessed_emails": [
+        "marco.marroquin@agilityrobotics.com",
+        "marco@agilityrobotics.com",
+        "mmarroquin@agilityrobotics.com",
+        "marcomarroquin@agilityrobotics.com",
+        "marroquin@agilityrobotics.com",
+        "m.marroquin@agilityrobotics.com",
+        "marco_marroquin@agilityrobotics.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

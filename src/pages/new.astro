@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro'
+---
+<Base title="new campaign">
+  <div class="dense max-w-2xl">
+    <h1>new campaign</h1>
+    <div class="card text-sm text-muted-fg">
+      UI to start a campaign is scaffolded. For now, run:
+      <pre class="mt-2 bg-muted p-2 text-xs">npm run demo:hybrid</pre>
+      Results appear on the <a href="/" class="underline">campaigns</a> page.
+    </div>
+    <div class="card">
+      <form method="POST" action="/api/campaigns" class="dense">
+        <div>
+          <label class="text-xs uppercase">campaign name</label>
+          <input name="title" placeholder="e.g. India fintech VPEs, Q2 push" required />
+        </div>
+        <div>
+          <label class="text-xs uppercase">ICP role</label>
+          <input name="role" value="VP Engineering or Platform" required />
+        </div>
+        <div>
+          <label class="text-xs uppercase">industry</label>
+          <input name="industry" value="B2B SaaS / Developer tools" required />
+        </div>
+        <div>
+          <label class="text-xs uppercase">company stage</label>
+          <input name="company_stage" value="Series B to Series D" />
+        </div>
+        <div>
+          <label class="text-xs uppercase">keywords (comma-separated)</label>
+          <input name="keywords" value="platform, infrastructure" />
+        </div>
+        <button type="submit" class="btn btn-accent">start campaign →</button>
+        <div class="text-xs text-muted-fg mt-2">Note: UI submission wiring pending — runs the mock pipeline server-side.</div>
+      </form>
+    </div>
+  </div>
+</Base>

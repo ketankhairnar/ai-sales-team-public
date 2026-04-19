@@ -1,0 +1,465 @@
+---
+import Base from '../../layouts/Base.astro'
+import { Store } from '../../db/store'
+import PipelineStrip from '../../components/PipelineStrip.astro'
+import HandoffChip from '../../components/HandoffChip.astro'
+import { DEFAULT_PIPELINE } from '../../dsl/default-pipeline'
+import { SCORE_RUBRIC } from '../../../rubrics/score'
+import { DRAFT_RUBRIC } from '../../../rubrics/draft'
+
+const id = decodeURIComponent(Astro.params.id ?? '')
+if (!id) return Astro.redirect('/')
+
+const store = new Store()
+const prospect = store.getProspect(id)
+if (!prospect) { store.close(); return new Response('not found', { status: 404 }) }
+const humanInputs = store.listHumanInputs(id)
+const campaignId = id.split('/')[0]
+// Attempts are persisted as events (kind:'attempt'), not on the envelope. Reconstruct per stage.
+const events = store.listEvents(campaignId, { prospectId: id, limit: 500 })
+store.close()
+
+// ---------- M/C/A reconstruction ----------
+type Attempt = {
+  iter: number
+  maker?: { persona?: string; output?: any; at?: string; prompt?: string; raw?: string }
+  checker?: { persona?: string; result?: any; at?: string; prompt?: string; raw?: string }
+  arbiter?: { persona?: string; decision?: any; at?: string; prompt?: string; raw?: string }
+}
+const attemptsByStage: Record<string, Attempt[]> = {}
+const stageAdvances: Array<{ from: string; to: string; at: string }> = []
+for (const e of events as any[]) {
+  if (e.kind === 'attempt' && e.stage_id && e.attempt) {
+    const sid = e.stage_id as string
+    attemptsByStage[sid] ??= []
+    const a = e.attempt as Attempt
+    const existing = attemptsByStage[sid].find(x => x.iter === a.iter)
+    if (existing) Object.assign(existing, { ...existing, ...a })
+    else attemptsByStage[sid].push(a)
+  } else if (e.kind === 'stage_advance') {
+    stageAdvances.push({ from: e.from ?? '', to: e.to ?? '', at: e.at ?? '' })
+  }
+}
+for (const sid of Object.keys(attemptsByStage)) {
+  attemptsByStage[sid].sort((a, b) => a.iter - b.iter)
+}
+const advanceInto = (sid: string) => stageAdvances.find(t => t.to === sid)
+
+// ---------- Rubric guides ----------
+const STAGE_RUBRIC: Record<string, { name: string; dims: { dim: string; guide: string }[] }> = {
+  scored: { name: 'score rubric', dims: SCORE_RUBRIC },
+  drafted: { name: 'draft rubric', dims: DRAFT_RUBRIC },
+}
+const rubricGuide = (stageId: string, dim: string): string =>
+  STAGE_RUBRIC[stageId]?.dims.find(d => d.dim === dim)?.guide ?? ''
+
+// ---------- Time/persona helpers ----------
+function fmtISTtime(iso?: string): string {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false })
+  } catch { return iso.slice(11, 16) }
+}
+function fmtISTdate(iso?: string): string {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }) + ' IST'
+  } catch { return iso.slice(0, 16) }
+}
+
+const PERSONA_SHORT: Record<string, { short: string; role: string }> = {
+  'SDR-Siddharth':      { short: 'Siddharth', role: 'SDR' },
+  'Skeptic-Shruti':     { short: 'Shruti',    role: 'Skeptic' },
+  'Editor-Esha':        { short: 'Esha',      role: 'Editor' },
+  'VPSales-Vikram':     { short: 'Vikram',    role: 'VP Sales' },
+}
+function personaCard(p?: string): { short: string; role: string } {
+  return PERSONA_SHORT[p ?? ''] ?? { short: p ?? '?', role: '' }
+}
+
+const stageOrder = DEFAULT_PIPELINE.stages.map(s => s.id)
+const scored = (prospect.stages.scored?.final_output as any)?.score as number | undefined
+const draft = prospect.stages.drafted?.final_output as { subject?: string; body?: string; opportunity_map?: string[] } | undefined
+const sent = prospect.stages.sent?.final_output as any
+---
+<Base title={prospect.name}>
+  <style is:global>
+    .mca-stage { border: 1px solid var(--border); margin-top: 14px; background: var(--bg); }
+    .mca-stage-head { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; background: var(--muted); }
+    .mca-stage-head:hover { background: var(--bg); }
+    .mca-stage[open] .mca-stage-head { border-bottom: 2px solid var(--border); }
+    .mca-stage-head::-webkit-details-marker { display: none; }
+    .mca-stage-head-l { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .mca-stage-body { padding: 14px; }
+    .mca-stage-num { font-family: var(--font-mono); font-size: 10px; color: var(--muted-fg); width: 16px; }
+    .mca-iter { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 10px; }
+    .mca-iter:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+    .mca-iter-head { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-fg); margin-bottom: 10px; display: flex; gap: 8px; align-items: baseline; }
+    .mca-roles { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 900px) { .mca-roles { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+    .mca-role { border: 1px solid var(--border); padding: 10px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
+    .mca-role-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
+    .mca-role-name { font-family: var(--font-display); font-weight: 600; font-size: 14px; }
+    .mca-role-tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-fg); }
+    .mca-role-maker   { border-top: 3px solid var(--accent); }
+    .mca-role-checker { border-top: 3px solid var(--fg); }
+    .mca-role-arbiter { border-top: 3px solid var(--fg); border-top-style: dashed; }
+    .mca-verdict { font-family: var(--font-mono); font-size: 11px; padding: 3px 6px; border: 1px solid var(--border); display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
+    .v-pass    { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+    .v-revise  { background: var(--bg); border-style: dashed; }
+    .v-reject  { background: var(--muted); color: var(--muted-fg); text-decoration: line-through; }
+    .v-pending { color: var(--muted-fg); }
+    .mca-dim { display: grid; grid-template-columns: 100px 40px 1fr; gap: 6px; align-items: baseline; font-size: 11px; padding: 2px 0; }
+    .mca-dim-name { font-family: var(--font-mono); text-transform: uppercase; font-size: 10px; color: var(--muted-fg); }
+    .mca-dim-score { font-family: var(--font-mono); font-weight: 600; }
+    .mca-dim-score.hi { color: var(--accent); }
+    .mca-dim-score.lo { color: var(--muted-fg); }
+    .mca-dim-bar { height: 3px; background: var(--muted); position: relative; align-self: center; }
+    .mca-dim-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--fg); }
+    .mca-dim-bar-fill.hi { background: var(--accent); }
+    .mca-list { font-family: var(--font-body); font-size: 12px; line-height: 1.5; margin-top: 4px; padding-left: 0; list-style: none; }
+    .mca-list li { padding-left: 12px; position: relative; color: var(--muted-fg); }
+    .mca-list li::before { content: '·'; position: absolute; left: 4px; color: var(--muted-fg); }
+    .mca-flow { font-family: var(--font-mono); font-size: 10px; color: var(--muted-fg); text-align: center; padding: 4px 0; }
+    .email-frame { border: 1px solid var(--border); background: var(--bg); padding: 16px 20px; margin-top: 10px; }
+    .email-subject { font-family: var(--font-display); font-size: 18px; font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .email-body { font-family: var(--font-body); font-size: 13.5px; line-height: 1.65; white-space: pre-wrap; }
+    .opp-map { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .opp-map-head { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-fg); margin-bottom: 6px; }
+    .opp-map ol { list-style: decimal; padding-left: 20px; font-family: var(--font-body); font-size: 12.5px; line-height: 1.55; }
+    .opp-map ol li { padding: 3px 0; }
+    .rej-banner { border-left: 3px solid var(--fg); background: var(--muted); padding: 8px 12px; margin-top: 10px; font-size: 12px; }
+    .final-banner { border-left: 3px solid var(--accent); background: var(--bg); padding: 6px 12px; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .role-score-big { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+    .role-score-big .denom { font-family: var(--font-mono); font-size: 12px; color: var(--muted-fg); }
+    details.mca-raw summary { cursor: pointer; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-fg); margin-top: 6px; }
+    details.mca-raw pre { font-family: var(--font-mono); font-size: 10px; white-space: pre-wrap; color: var(--muted-fg); border-left: 1px solid var(--border); padding-left: 6px; margin-top: 4px; max-height: 180px; overflow-y: auto; }
+  </style>
+
+  <div class="dense">
+    {/* How the AI loop works — link to sketchnote */}
+    <div class="mono text-[10px] uppercase tracking-wider text-muted-fg mb-2">
+      <a href="/solution-sketch.png" target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">How the AI loop works →</a>
+    </div>
+    {/* Editorial header */}
+    <div class="border-b border-border pb-4">
+      <div class="uppercase-label">prospect · {prospect.current_stage}{prospect.outcome && ` · ${prospect.outcome}`}</div>
+      <h1 class="serif mt-1">{prospect.name}</h1>
+      <div class="mono text-sm mt-1 text-muted-fg">
+        {prospect.title}{prospect.company && <> · {prospect.company}</>}
+        {typeof scored === 'number' && (
+          <span class={`ml-3 ${scored >= 8 ? 'dot-hot font-semibold' : ''}`}>· score {scored}/10</span>
+        )}
+      </div>
+      {prospect.linkedin_url && (
+        <a href={prospect.linkedin_url} target="_blank" class="mono text-xs underline mt-2 inline-block">{prospect.linkedin_url}</a>
+      )}
+    </div>
+
+    {/* Pipeline strip */}
+    <div class="card">
+      <div class="uppercase-label mb-2">pipeline</div>
+      <PipelineStrip prospect={prospect} />
+    </div>
+
+    {/* Final sent artifact — hero position if we actually sent */}
+    {prospect.stages.sent?.status === 'passed' && (
+      <div class="card" style="border-top: 3px solid var(--accent);">
+        <div class="flex items-baseline justify-between">
+          <div class="uppercase-label">final · sent email</div>
+          <span class="mono text-xs text-muted-fg">
+            {fmtISTdate(prospect.stages.sent.ended_at)}
+            {sent?.id && <> · id {String(sent.id).slice(0, 12)}</>}
+          </span>
+        </div>
+        {draft?.subject && (
+          <div class="email-frame">
+            <div class="email-subject">{draft.subject}</div>
+            <div class="email-body">{draft.body}</div>
+            {Array.isArray(draft.opportunity_map) && draft.opportunity_map.length > 0 && (
+              <div class="opp-map">
+                <div class="opp-map-head">opportunity map</div>
+                <ol>{draft.opportunity_map.map((b: string) => <li>{b}</li>)}</ol>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Per-stage M/C/A section */}
+    <div>
+      <div class="uppercase-label mb-1">stages · agent transcript</div>
+      <div class="mono text-[10px] text-muted-fg mb-2">click a stage to expand · shows every attempt with Maker → Checker → Arbiter verdicts</div>
+
+      {stageOrder.filter(sid => prospect.stages[sid]).map((sid, idx) => {
+        const env = prospect.stages[sid]
+        const spec = DEFAULT_PIPELINE.stages.find(s => s.id === sid)
+        const attempts = attemptsByStage[sid] ?? []
+        const rubric = STAGE_RUBRIC[sid]
+        const adv = advanceInto(sid)
+        const statusLabel = env.status
+        const statusClass = env.status === 'passed' ? 'v-pass' : env.status === 'rejected' ? 'v-reject' : env.status === 'awaiting_human' ? 'v-revise' : 'v-pending'
+        // open by default: the current stage + any rejected stage
+        const openByDefault = env.status === 'rejected' || env.status === 'awaiting_human' || sid === prospect.current_stage
+        const maker = personaCard(spec?.maker)
+        const checker = personaCard(spec?.checker)
+        const arbiter = personaCard(spec?.arbiter)
+        return (
+          <details class="mca-stage" open={openByDefault}>
+            <summary class="mca-stage-head">
+              <div class="mca-stage-head-l">
+                <span class="mca-stage-num">{String(idx + 1).padStart(2, '0')}</span>
+                <span class="serif text-lg">{spec?.label ?? sid}</span>
+                <span class={`mca-verdict ${statusClass}`}>{statusLabel}</span>
+                {attempts.length > 0 && (
+                  <span class="mono text-[10px] text-muted-fg">
+                    {attempts.length} iteration{attempts.length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {spec?.human_gate?.blocking && <HandoffChip kind="human" verb="human gate" />}
+              </div>
+              <div class="mono text-[10px] text-muted-fg">
+                {adv && <span>entered {fmtISTtime(adv.at)}</span>}
+                {env.ended_at && <span> · ended {fmtISTtime(env.ended_at)}</span>}
+              </div>
+            </summary>
+            <div class="mca-stage-body">
+
+              {/* Team for this stage */}
+              {(spec?.checker || spec?.arbiter) && (
+                <div class="flex flex-wrap gap-3 mb-3 pb-3 border-b border-dashed border-border">
+                  <div class="mono text-[10px] uppercase tracking-wider text-muted-fg">team:</div>
+                  <div class="mono text-[11px]"><span class="text-muted-fg">maker</span> {maker.short}</div>
+                  {spec?.checker && <div class="mono text-[11px]"><span class="text-muted-fg">checker</span> {checker.short}</div>}
+                  {spec?.arbiter && <div class="mono text-[11px]"><span class="text-muted-fg">arbiter</span> {arbiter.short}</div>}
+                  {spec?.pass_threshold != null && <div class="mono text-[11px] text-muted-fg">pass ≥ {spec.pass_threshold}/10</div>}
+                  {spec?.max_iterations != null && <div class="mono text-[11px] text-muted-fg">max {spec.max_iterations} iter</div>}
+                </div>
+              )}
+
+              {/* Rubric dimensions */}
+              {rubric && (
+                <details style="margin-bottom: 14px; border-left: 2px solid var(--accent); padding-left: 10px;">
+                  <summary class="cursor-pointer mono text-[10px] uppercase tracking-wider text-accent">
+                    {rubric.name} — {rubric.dims.length} dimensions
+                  </summary>
+                  <ul class="mt-2 space-y-1.5 body-serif text-[11.5px]">
+                    {rubric.dims.map(d => (
+                      <li>
+                        <div class="mono text-[10px] uppercase text-fg font-semibold">{d.dim}</div>
+                        <div class="text-muted-fg">{d.guide}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
+              {/* Tool-only stages (discovered, researched, sent) — no M/C/A trail */}
+              {!spec?.checker && attempts.length > 0 && (
+                <div class="mono text-[11px] text-muted-fg mb-2">
+                  tool: {spec?.tools?.join(', ') ?? '—'} · run by {maker.short}
+                </div>
+              )}
+
+              {/* Attempts */}
+              {attempts.length === 0 && !spec?.checker && env.final_output && (
+                <div class="mono text-[11px] text-muted-fg italic">no recorded attempts (tool-only stage)</div>
+              )}
+              {attempts.length === 0 && spec?.checker && (
+                <div class="mono text-[11px] text-muted-fg italic">
+                  attempt trail unavailable — ephemeral events may have been pruned
+                </div>
+              )}
+
+              {attempts.map((a) => {
+                const ck = (a.checker?.result ?? {}) as any
+                const ar = (a.arbiter?.decision ?? {}) as any
+                const mo = (a.maker?.output ?? {}) as any
+                const dimScores = (ck?.dimension_scores ?? {})
+                const arbDec = ar?.decision as string | undefined
+                const arbClass = arbDec === 'pass' ? 'v-pass' : arbDec === 'reject' ? 'v-reject' : arbDec === 'revise' ? 'v-revise' : 'v-pending'
+                const ckClass = ck?.pass ? 'v-pass' : ck && Object.keys(ck).length > 0 ? 'v-revise' : 'v-pending'
+                const outcomeLabel = ck?.pass ? 'checker passed → advanced' :
+                  arbDec === 'pass' ? 'arbiter overrode → advanced' :
+                  arbDec === 'revise' ? 'arbiter said revise → next iteration' :
+                  arbDec === 'reject' ? 'arbiter rejected → stage stopped' :
+                  ''
+                return (
+                  <div class="mca-iter">
+                    <div class="mca-iter-head">
+                      <span>iteration {a.iter} / {attempts.length}</span>
+                      {a.maker?.at && <span class="text-muted-fg">· {fmtISTtime(a.maker.at)}</span>}
+                    </div>
+                    <div class="mca-roles">
+                      {/* MAKER */}
+                      <div class="mca-role mca-role-maker">
+                        <div class="mca-role-head">
+                          <div>
+                            <div class="mca-role-name">{personaCard(a.maker?.persona).short}</div>
+                            <div class="mca-role-tag">maker · {personaCard(a.maker?.persona).role}</div>
+                          </div>
+                        </div>
+                        {sid === 'scored' && typeof mo?.score === 'number' && (
+                          <div><span class="role-score-big">{mo.score}<span class="denom">/10</span></span></div>
+                        )}
+                        {sid === 'scored' && Array.isArray(mo?.reasons) && mo.reasons.length > 0 && (
+                          <ul class="mca-list">{mo.reasons.map((r: string) => <li>{r}</li>)}</ul>
+                        )}
+                        {sid === 'drafted' && mo?.subject && (
+                          <div class="body-serif text-[13px] font-semibold italic">"{mo.subject}"</div>
+                        )}
+                        {sid === 'drafted' && mo?.body && (
+                          <details open={a.iter === attempts.length}>
+                            <summary class="cursor-pointer mono text-[10px] uppercase text-muted-fg">email body</summary>
+                            <pre class="body-serif text-[12px] whitespace-pre-wrap mt-1 text-fg">{mo.body}</pre>
+                          </details>
+                        )}
+                        {sid === 'drafted' && Array.isArray(mo?.opportunity_map) && mo.opportunity_map.length > 0 && (
+                          <div class="opp-map" style="margin-top: 8px; padding-top: 8px;">
+                            <div class="opp-map-head">opportunity map</div>
+                            <ol class="list-decimal pl-5 body-serif text-[11.5px] leading-snug">{mo.opportunity_map.map((b: string) => <li>{b}</li>)}</ol>
+                          </div>
+                        )}
+                        {sid !== 'scored' && sid !== 'drafted' && mo && (
+                          <pre class="mono text-[10px] whitespace-pre-wrap text-muted-fg">{JSON.stringify(mo, null, 2).slice(0, 400)}</pre>
+                        )}
+                      </div>
+
+                      {/* CHECKER */}
+                      <div class="mca-role mca-role-checker">
+                        <div class="mca-role-head">
+                          <div>
+                            <div class="mca-role-name">{personaCard(a.checker?.persona).short}</div>
+                            <div class="mca-role-tag">checker · {personaCard(a.checker?.persona).role}</div>
+                          </div>
+                          <span class={`mca-verdict ${ckClass}`}>{ck?.pass ? 'pass' : Object.keys(ck).length > 0 ? 'fail' : '—'}</span>
+                        </div>
+                        {typeof ck?.overall_score === 'number' && (
+                          <div><span class="role-score-big">{ck.overall_score}<span class="denom">/10</span></span></div>
+                        )}
+                        {Object.keys(dimScores).length > 0 && (
+                          <div class="mt-1">
+                            {Object.entries(dimScores).map(([dim, score]) => {
+                              const pct = Math.min(100, Math.max(0, (Number(score) / 10) * 100))
+                              const hi = Number(score) >= 8
+                              const lo = Number(score) < 6
+                              const guide = rubricGuide(sid, dim)
+                              return (
+                                <div class="mca-dim" title={guide}>
+                                  <span class="mca-dim-name">{dim}</span>
+                                  <span class={`mca-dim-score ${hi ? 'hi' : ''} ${lo ? 'lo' : ''}`}>{score}/10</span>
+                                  <span class="mca-dim-bar"><span class={`mca-dim-bar-fill ${hi ? 'hi' : ''}`} style={`width: ${pct}%`}></span></span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                        {Array.isArray(ck?.issues) && ck.issues.length > 0 && (
+                          <div class="mt-1">
+                            <div class="mono text-[9px] uppercase text-muted-fg tracking-wider">issues</div>
+                            <ul class="mca-list">{ck.issues.map((s: string) => <li>{s}</li>)}</ul>
+                          </div>
+                        )}
+                        {Array.isArray(ck?.suggestions) && ck.suggestions.length > 0 && (
+                          <div class="mt-1">
+                            <div class="mono text-[9px] uppercase text-muted-fg tracking-wider">suggestions</div>
+                            <ul class="mca-list">{ck.suggestions.map((s: string) => <li>{s}</li>)}</ul>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ARBITER */}
+                      <div class="mca-role mca-role-arbiter">
+                        <div class="mca-role-head">
+                          <div>
+                            <div class="mca-role-name">{personaCard(a.arbiter?.persona).short}</div>
+                            <div class="mca-role-tag">arbiter · {personaCard(a.arbiter?.persona).role}</div>
+                          </div>
+                          <span class={`mca-verdict ${arbClass}`}>{arbDec ?? '—'}</span>
+                        </div>
+                        {ar?.reason && (
+                          <div class="body-serif text-[12.5px] leading-snug">{ar.reason}</div>
+                        )}
+                        {Array.isArray(ar?.feedback_for_maker) && ar.feedback_for_maker.length > 0 && (
+                          <div class="mt-1">
+                            <div class="mono text-[9px] uppercase text-muted-fg tracking-wider">feedback for next iter</div>
+                            <ul class="mca-list">{ar.feedback_for_maker.map((s: string) => <li>{s}</li>)}</ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Outcome strip */}
+                    {outcomeLabel && (
+                      <div class="mca-flow" style="text-align: right; margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 6px;">
+                        → {outcomeLabel}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Stage terminal strips */}
+              {env.status === 'passed' && (
+                <div class="final-banner">✓ passed · advanced out of {sid}</div>
+              )}
+              {env.status === 'rejected' && env.reject_reason && (
+                <div class="rej-banner">
+                  <div class="mono text-[10px] uppercase tracking-wider text-muted-fg mb-1">rejected</div>
+                  <div class="body-serif text-[13px]">{env.reject_reason}</div>
+                </div>
+              )}
+              {env.status === 'awaiting_human' && (
+                <div class="final-banner" style="border-left-color: var(--fg);">⧖ awaiting human approval</div>
+              )}
+            </div>
+          </details>
+        )
+      })}
+    </div>
+
+    {/* Human inputs timeline */}
+    {humanInputs.length > 0 && (
+      <div class="card">
+        <div class="uppercase-label mb-2">human inputs</div>
+        <ul class="mono text-[11px] space-y-1">
+          {humanInputs.map((h: any) => (
+            <li class="flex gap-3">
+              <span class="text-muted-fg w-28 shrink-0">{fmtISTdate(h.at)}</span>
+              <span class="uppercase tracking-wider w-16 shrink-0">{h.kind}</span>
+              <span>{h.author?.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Human gate approve form */}
+    {prospect.stages.drafted?.status === 'awaiting_human' && draft?.subject && (
+      <div class="card" style="border-top: 3px solid var(--fg);">
+        <div class="uppercase-label mb-2">human gate — review & approve</div>
+        <div class="email-frame">
+          <div class="email-subject">{draft.subject}</div>
+          <div class="email-body">{draft.body}</div>
+          {Array.isArray(draft.opportunity_map) && draft.opportunity_map.length > 0 && (
+            <div class="opp-map">
+              <div class="opp-map-head">opportunity map</div>
+              <ol>{draft.opportunity_map.map((b: string) => <li>{b}</li>)}</ol>
+            </div>
+          )}
+        </div>
+        <form method="POST" action="/api/approve" class="flex gap-2 mt-3">
+          <input type="hidden" name="prospect_id" value={prospect.id} />
+          <input type="hidden" name="campaign_id" value={campaignId} />
+          <button type="submit" name="action" value="approve" class="btn btn-accent">approve &amp; send</button>
+          <button type="submit" name="action" value="reject" class="btn">reject</button>
+        </form>
+      </div>
+    )}
+
+    <div class="pt-4 flex gap-2">
+      <a href={`/campaign/${campaignId}`} class="btn btn-ghost">← back to board</a>
+    </div>
+  </div>
+</Base>

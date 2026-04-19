@@ -1,0 +1,35 @@
+---
+export const partial = true
+import { Store } from '../../../db/store'
+import ProspectCard from '../../../components/ProspectCard.astro'
+import { COLUMNS, groupByColumn } from '../../../runtime/board-view'
+
+const { id } = Astro.params
+if (!id) return new Response('missing id', { status: 400 })
+const selected = Astro.url.searchParams.get('p') ?? ''
+
+const store = new Store()
+const prospects = store.listProspects(id)
+store.close()
+
+const byCol = groupByColumn(prospects)
+const gridCols = COLUMNS.map(c => c.width).join(' ')
+---
+<div class="grid gap-0" style={`grid-template-columns: ${gridCols};`}>
+  {COLUMNS.map((col) => {
+    const column = byCol.get(col.id) ?? []
+    const active = column.length > 0 && col.id !== 'sent' && col.id !== 'discovered' && col.id !== 'lost' && col.id !== 'parked'
+    return (
+      <div class="flex flex-col">
+        <div class={`col-head ${active ? 'col-head-active' : ''}`}>
+          <span>{col.label}</span>
+          <span class={active ? 'text-accent-fg' : 'text-accent'} style={active ? 'color: var(--accent-fg)' : ''}>{column.length}</span>
+        </div>
+        <div class="col-body">
+          {column.length === 0 && <div class="mono text-xs text-muted-fg italic">empty</div>}
+          {column.map((p) => <ProspectCard prospect={p} selected={p.id === selected} campaignId={id} />)}
+        </div>
+      </div>
+    )
+  })}
+</div>

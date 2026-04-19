@@ -1,0 +1,97 @@
+---
+import type { StageEnvelope } from '../dsl/envelope'
+import { DEFAULT_PIPELINE } from '../dsl/default-pipeline'
+import HandoffChip from './HandoffChip.astro'
+
+export interface Props { stageId: string; envelope: StageEnvelope }
+const { stageId, envelope } = Astro.props as Props
+const stageSpec = DEFAULT_PIPELINE.stages.find(s => s.id === stageId)
+
+const short = (id?: string) => id ? id.split('-').pop() : ''
+
+// Attempts have: iter, maker, checker (optional), arbiter (optional)
+const attempts = envelope.attempts ?? []
+const finalOutput = envelope.final_output
+const rejectReason = envelope.reject_reason
+
+// For drafted stage show email body nicely. For scored show score+reasons.
+const isDraft = stageId === 'drafted' && finalOutput && typeof finalOutput === 'object'
+const isScore = stageId === 'scored' && finalOutput && typeof finalOutput === 'object'
+---
+<div class="dense" style="margin-top: 10px;">
+  {(stageSpec?.checker || stageSpec?.arbiter) && attempts.length > 0 && (
+    <div class="mca-grid">
+      <div class="mca-head">iter</div>
+      <div class="mca-head">maker · {short(stageSpec?.maker)}</div>
+      <div class="mca-head">checker · {short(stageSpec?.checker)}</div>
+      <div class="mca-head">arbiter · {short(stageSpec?.arbiter)}</div>
+      {attempts.map((a) => {
+        const out = a.maker?.output
+        const outStr = typeof out === 'object' && out !== null
+          ? (('score' in (out as any) ? `${(out as any).score}/10 · ${((out as any).reasons ?? []).slice(0,1).join('; ')}` : JSON.stringify(out).slice(0, 120)))
+          : String(out ?? '')
+        const checkScore = (a as any).checker?.result?.overall_score
+        const checkPass = (a as any).checker?.result?.pass
+        const arbitDecision = (a as any).arbiter?.decision
+        return (
+          <>
+            <div class="mca-iter">{a.iter}</div>
+            <div>{outStr.slice(0, 140)}</div>
+            <div>
+              {checkScore != null ? (
+                <span class={checkPass ? 'dot-hot' : ''}>{checkScore}/10 {checkPass ? '✓' : '✗'}</span>
+              ) : <span class="text-muted-fg">—</span>}
+            </div>
+            <div>
+              {arbitDecision ? (
+                <HandoffChip kind={arbitDecision === 'pass' ? 'pass' : arbitDecision === 'reject' ? 'reject' : 'revise'} verb={arbitDecision} />
+              ) : <span class="text-muted-fg">—</span>}
+            </div>
+          </>
+        )
+      })}
+    </div>
+  )}
+
+  {/* Gate marker */}
+  {stageSpec?.human_gate?.blocking && (
+    <div class="flex items-center gap-2 text-xs">
+      <span class="flex-1 border-t border-dashed border-border"></span>
+      <HandoffChip kind="human" verb="human gate" />
+      <span class="flex-1 border-t border-dashed border-border"></span>
+    </div>
+  )}
+
+  {/* Final outputs, stage-specific */}
+  {isScore && (
+    <div class="card card-muted">
+      <div class="uppercase-label">final score</div>
+      <div class="flex items-baseline gap-3 mt-1">
+        <span class="serif text-3xl font-semibold">{(finalOutput as any).score}<span class="mono text-sm text-muted-fg">/10</span></span>
+        <span class="mono text-xs text-muted-fg">{((finalOutput as any).reasons ?? []).join(' · ')}</span>
+      </div>
+    </div>
+  )}
+  {isDraft && (
+    <div class="card card-muted">
+      <div class="uppercase-label">email draft</div>
+      <div class="mono text-xs text-muted-fg mt-2">SUBJECT</div>
+      <div class="serif text-lg mt-1">{(finalOutput as any).subject}</div>
+      <div class="mono text-xs text-muted-fg mt-3">BODY</div>
+      <pre class="body-serif text-sm whitespace-pre-wrap mt-1">{(finalOutput as any).body}</pre>
+    </div>
+  )}
+  {!isScore && !isDraft && finalOutput != null && (
+    <div class="card card-muted">
+      <div class="uppercase-label">output</div>
+      <pre class="mono text-xs whitespace-pre-wrap overflow-x-auto mt-1">{JSON.stringify(finalOutput, null, 2).slice(0, 500)}</pre>
+    </div>
+  )}
+
+  {rejectReason && (
+    <div class="flex gap-2 items-start">
+      <HandoffChip kind="reject" verb="rejected" />
+      <span class="text-sm text-muted-fg flex-1">{rejectReason}</span>
+    </div>
+  )}
+</div>

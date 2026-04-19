@@ -1,0 +1,162 @@
+{
+  "company": "Mentee Robotics",
+  "domain": "menteebot.com",
+  "team_page": "https://menteebot.com/company/",
+  "scraped_at": "2026-03-25T10:08:34.950344+00:00",
+  "people": [
+    {
+      "name": "Amnon Shashua",
+      "title": "Chairman and Co-Founder",
+      "guessed_emails": [
+        "amnon.shashua@menteebot.com",
+        "amnon@menteebot.com",
+        "ashashua@menteebot.com",
+        "amnonshashua@menteebot.com",
+        "shashua@menteebot.com",
+        "a.shashua@menteebot.com",
+        "amnon_shashua@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Shai Shalev-Shwartz",
+      "title": "Co-Founder",
+      "guessed_emails": [
+        "shai.shalevshwartz@menteebot.com",
+        "shai@menteebot.com",
+        "sshalevshwartz@menteebot.com",
+        "shaishalevshwartz@menteebot.com",
+        "shalevshwartz@menteebot.com",
+        "s.shalevshwartz@menteebot.com",
+        "shai_shalevshwartz@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Lior Wolf",
+      "title": "CEO and Co-Founder",
+      "guessed_emails": [
+        "lior.wolf@menteebot.com",
+        "lior@menteebot.com",
+        "lwolf@menteebot.com",
+        "liorwolf@menteebot.com",
+        "wolf@menteebot.com",
+        "l.wolf@menteebot.com",
+        "lior_wolf@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Sarit Melamed",
+      "title": "CFO",
+      "guessed_emails": [
+        "sarit.melamed@menteebot.com",
+        "sarit@menteebot.com",
+        "smelamed@menteebot.com",
+        "saritmelamed@menteebot.com",
+        "melamed@menteebot.com",
+        "s.melamed@menteebot.com",
+        "sarit_melamed@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Yovav Meydad",
+      "title": "Chief Strategy & Product Officer",
+      "guessed_emails": [
+        "yovav.meydad@menteebot.com",
+        "yovav@menteebot.com",
+        "ymeydad@menteebot.com",
+        "yovavmeydad@menteebot.com",
+        "meydad@menteebot.com",
+        "y.meydad@menteebot.com",
+        "yovav_meydad@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Shir Gur",
+      "title": "CTO",
+      "guessed_emails": [
+        "shir.gur@menteebot.com",
+        "shir@menteebot.com",
+        "sgur@menteebot.com",
+        "shirgur@menteebot.com",
+        "gur@menteebot.com",
+        "s.gur@menteebot.com",
+        "shir_gur@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Tom Shenkar",
+      "title": "Head of AI",
+      "guessed_emails": [
+        "tom.shenkar@menteebot.com",
+        "tom@menteebot.com",
+        "tshenkar@menteebot.com",
+        "tomshenkar@menteebot.com",
+        "shenkar@menteebot.com",
+        "t.shenkar@menteebot.com",
+        "tom_shenkar@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Amos Hadas",
+      "title": "Head of Mechanical Engineering",
+      "guessed_emails": [
+        "amos.hadas@menteebot.com",
+        "amos@menteebot.com",
+        "ahadas@menteebot.com",
+        "amoshadas@menteebot.com",
+        "hadas@menteebot.com",
+        "a.hadas@menteebot.com",
+        "amos_hadas@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Ziv Ramati-Miller",
+      "title": "Head of Robotic Systems",
+      "guessed_emails": [
+        "ziv.ramatimiller@menteebot.com",
+        "ziv@menteebot.com",
+        "zramatimiller@menteebot.com",
+        "zivramatimiller@menteebot.com",
+        "ramatimiller@menteebot.com",
+        "z.ramatimiller@menteebot.com",
+        "ziv_ramatimiller@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Dor Weitman",
+      "title": "Head of SW Engineering",
+      "guessed_emails": [
+        "dor.weitman@menteebot.com",
+        "dor@menteebot.com",
+        "dweitman@menteebot.com",
+        "dorweitman@menteebot.com",
+        "weitman@menteebot.com",
+        "d.weitman@menteebot.com",
+        "dor_weitman@menteebot.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Idan Rotem",
+      "title": "Head of System",
+      "guessed_emails": [
+        "idan.rotem@menteebot.com",
+        "idan@menteebot.com",
+        "irotem@menteebot.com",
+        "idanrotem@menteebot.com",
+        "rotem@menteebot.com",
+        "i.rotem@menteebot.com",
+        "idan_rotem@menteebot.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+---
+import { DEFAULT_PIPELINE } from '../dsl/default-pipeline'
+import type { Prospect } from '../dsl/envelope'
+
+export interface Props { prospect?: Prospect }
+const { prospect } = Astro.props as Props
+const stages = DEFAULT_PIPELINE.stages
+---
+<div class="flex items-center flex-wrap gap-1 text-xs">
+  {stages.map((s, i) => {
+    const env = prospect?.stages?.[s.id]
+    const st = env?.status ?? 'pending'
+    const icon = st === 'passed' ? '✓' : st === 'rejected' ? '✗' : st === 'awaiting_human' ? '?' : '·'
+    const classes = st === 'passed' ? 'text-fg font-semibold'
+      : st === 'rejected' ? 'text-muted-fg line-through'
+      : st === 'awaiting_human' ? 'text-accent font-semibold'
+      : 'text-muted-fg'
+    const gated = s.human_gate?.blocking
+    return (
+      <>
+        <span class={`mono ${classes}`} title={st}>
+          <span class="font-bold">{icon}</span> {s.label.toLowerCase()}
+        </span>
+        {i < stages.length - 1 && (
+          <>
+            {stages[i + 1].human_gate?.blocking && (
+              <span class="gate-marker" title="human gate before next stage">H</span>
+            )}
+            <span class="pipeline-arrow">──▶</span>
+          </>
+        )}
+      </>
+    )
+  })}
+</div>

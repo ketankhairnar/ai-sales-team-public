@@ -1,0 +1,22 @@
+{
+  "company": "Boston Dynamics",
+  "domain": "bostondynamics.com",
+  "team_page": "https://bostondynamics.com/about/",
+  "scraped_at": "2026-03-25T09:57:42.727875+00:00",
+  "people": [
+    {
+      "name": "Rachel Salamone",
+      "title": "Chief People Officer",
+      "guessed_emails": [
+        "rachel.salamone@bostondynamics.com",
+        "rachel@bostondynamics.com",
+        "rsalamone@bostondynamics.com",
+        "rachelsalamone@bostondynamics.com",
+        "salamone@bostondynamics.com",
+        "r.salamone@bostondynamics.com",
+        "rachel_salamone@bostondynamics.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

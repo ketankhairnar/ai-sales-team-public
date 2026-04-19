@@ -1,0 +1,134 @@
+{
+  "company": "Apptronik",
+  "domain": "apptronik.com",
+  "team_page": "https://apptronik.com/leadership",
+  "scraped_at": "2026-03-25T09:56:48.978626+00:00",
+  "people": [
+    {
+      "name": "Jeff Cardenas",
+      "title": "CO-FOUNDER, CEO",
+      "guessed_emails": [
+        "jeff.cardenas@apptronik.com",
+        "jeff@apptronik.com",
+        "jcardenas@apptronik.com",
+        "jeffcardenas@apptronik.com",
+        "cardenas@apptronik.com",
+        "j.cardenas@apptronik.com",
+        "jeff_cardenas@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Nick Paine",
+      "title": "CO-FOUNDER, CTO",
+      "guessed_emails": [
+        "nick.paine@apptronik.com",
+        "nick@apptronik.com",
+        "npaine@apptronik.com",
+        "nickpaine@apptronik.com",
+        "paine@apptronik.com",
+        "n.paine@apptronik.com",
+        "nick_paine@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Kay Sheils Kingsbury",
+      "title": "CHIEF FINANCIAL OFFICER",
+      "guessed_emails": [
+        "kay.kingsbury@apptronik.com",
+        "kay@apptronik.com",
+        "kkingsbury@apptronik.com",
+        "kaykingsbury@apptronik.com",
+        "kingsbury@apptronik.com",
+        "k.kingsbury@apptronik.com",
+        "kay_kingsbury@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Barry Phillips",
+      "title": "CHIEF COMMERCIAL OFFICER",
+      "guessed_emails": [
+        "barry.phillips@apptronik.com",
+        "barry@apptronik.com",
+        "bphillips@apptronik.com",
+        "barryphillips@apptronik.com",
+        "phillips@apptronik.com",
+        "b.phillips@apptronik.com",
+        "barry_phillips@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Steve O'Dea",
+      "title": "CHIEF OPERATING OFFICER",
+      "guessed_emails": [
+        "steve.odea@apptronik.com",
+        "steve@apptronik.com",
+        "sodea@apptronik.com",
+        "steveodea@apptronik.com",
+        "odea@apptronik.com",
+        "s.odea@apptronik.com",
+        "steve_odea@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Gordon Daugherty",
+      "title": "BOARD MEMBER",
+      "guessed_emails": [
+        "gordon.daugherty@apptronik.com",
+        "gordon@apptronik.com",
+        "gdaugherty@apptronik.com",
+        "gordondaugherty@apptronik.com",
+        "daugherty@apptronik.com",
+        "g.daugherty@apptronik.com",
+        "gordon_daugherty@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Howard Morgan",
+      "title": "BOARD MEMBER",
+      "guessed_emails": [
+        "howard.morgan@apptronik.com",
+        "howard@apptronik.com",
+        "hmorgan@apptronik.com",
+        "howardmorgan@apptronik.com",
+        "morgan@apptronik.com",
+        "h.morgan@apptronik.com",
+        "howard_morgan@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Greg Steele",
+      "title": "Advisor",
+      "guessed_emails": [
+        "greg.steele@apptronik.com",
+        "greg@apptronik.com",
+        "gsteele@apptronik.com",
+        "gregsteele@apptronik.com",
+        "steele@apptronik.com",
+        "g.steele@apptronik.com",
+        "greg_steele@apptronik.com"
+      ],
+      "verified": {}
+    },
+    {
+      "name": "Luis Sentis",
+      "title": "CO-FOUNDER, SCIENTIFIC ADVISOR",
+      "guessed_emails": [
+        "luis.sentis@apptronik.com",
+        "luis@apptronik.com",
+        "lsentis@apptronik.com",
+        "luissentis@apptronik.com",
+        "sentis@apptronik.com",
+        "l.sentis@apptronik.com",
+        "luis_sentis@apptronik.com"
+      ],
+      "verified": {}
+    }
+  ]
+}

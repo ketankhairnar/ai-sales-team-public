@@ -1,0 +1,22 @@
+{
+  "company": "1X",
+  "domain": "1x.tech",
+  "team_page": "https://www.1x.tech/about",
+  "scraped_at": "2026-03-25T09:57:30.374273+00:00",
+  "people": [
+    {
+      "name": "NEO Gamma",
+      "title": "NEO Gamma is our updated version of NEO more suitable for home usage. Bringing us one step closer to enter homes across the US.",
+      "guessed_emails": [
+        "neo.gamma@1x.tech",
+        "neo@1x.tech",
+        "ngamma@1x.tech",
+        "neogamma@1x.tech",
+        "gamma@1x.tech",
+        "n.gamma@1x.tech",
+        "neo_gamma@1x.tech"
+      ],
+      "verified": {}
+    }
+  ]
+}

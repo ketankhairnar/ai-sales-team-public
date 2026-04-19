@@ -1,0 +1,26 @@
+---
+export interface Props {
+  kind?: 'pass' | 'revise' | 'reject' | 'human' | 'handoff'
+  from?: string
+  to?: string
+  verb?: string
+  note?: string
+}
+const { kind = 'handoff', from, to, verb, note } = Astro.props as Props
+
+const cls = {
+  pass: 'chip chip-pass',
+  revise: 'chip chip-handoff chip-revise',
+  reject: 'chip chip-reject',
+  human: 'chip chip-human',
+  handoff: 'chip chip-handoff'
+}[kind]
+
+const shortPersona = (id?: string) => id ? id.split('-').pop() : ''
+---
+<span class={cls}>
+  {from && <>{shortPersona(from)}</>}
+  {to && <> → {shortPersona(to)}</>}
+  {verb && <>: {verb}</>}
+  {note && <>: {note}</>}
+</span>

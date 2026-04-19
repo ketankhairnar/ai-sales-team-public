@@ -1,0 +1,206 @@
+{
+  "repo": "kingjulio8238/humanoid-atlas",
+  "extracted_at": "2026-03-25T08:51:05.463625+00:00",
+  "users": [
+    {
+      "username": "AinzuOoalGoun",
+      "name": null,
+      "email": null,
+      "company": null,
+      "bio": null,
+      "twitter": null,
+      "blog": "",
+      "location": null,
+      "public_repos": 11,
+      "followers": 0,
+      "profile": "https://github.com/AinzuOoalGoun",
+      "source": "forker"
+    },
+    {
+      "username": "Azhu9701",
+      "name": null,
+      "email": null,
+      "company": null,
+      "bio": null,
+      "twitter": null,
+      "blog": "",
+      "location": null,
+      "public_repos": 1,
+      "followers": 0,
+      "profile": "https://github.com/Azhu9701",
+      "source": "forker"
+    },
+    {
+      "username": "MYaelMendez",
+      "name": "YAEL",
+      "email": null,
+      "company": "LLM.STORE",
+      "bio": "I THINK SYSTEMS.",
+      "twitter": null,
+      "blog": "LLM.STORE",
+      "location": "SPI, TX",
+      "public_repos": 306,
+      "followers": 29,
+      "profile": "https://github.com/MYaelMendez",
+      "source": "forker"
+    },
+    {
+      "username": "NullLabTests",
+      "name": "\"The nullipotency inherent in the pluripotent idempotence of omnipotent functions illustrates a theoretical framework where transformations yield no change upon repetition.\"",
+      "email": null,
+      "company": null,
+      "bio": "* Infosec, AI/ML, AR/VR (XR,) GenAI. \r\n\r\n* Continuous learning.\r\n\r\n",
+      "twitter": null,
+      "blog": "",
+      "location": null,
+      "public_repos": 355,
+      "followers": 22,
+      "profile": "https://github.com/NullLabTests",
+      "source": "forker"
+    },
+    {
+      "username": "ThomasBurgess2000",
+      "name": "Thomas Burgess",
+      "email": null,
+      "company": "MeetKai, Inc.",
+      "bio": "old work acct @ThomasMeetKai ",
+      "twitter": null,
+      "blog": "thomasburgess.dev",
+      "location": "Texas",
+      "public_repos": 40,
+      "followers": 9,
+      "profile": "https://github.com/ThomasBurgess2000",
+      "source": "contributor"
+    },
+    {
+      "username": "archerlinn",
+      "name": "Archer Lin",
+      "email": null,
+      "company": "Vibe Robotics Technologies Inc.",
+      "bio": "Hey there, I'm Archer, and I love building robots.",
+      "twitter": null,
+      "blog": "https://www.viberobotics.co/",
+      "location": null,
+      "public_repos": 29,
+      "followers": 5,
+      "profile": "https://github.com/archerlinn",
+      "source": "forker"
+    },
+    {
+      "username": "caleb-friesen",
+      "name": null,
+      "email": null,
+      "company": null,
+      "bio": null,
+      "twitter": null,
+      "blog": "",
+      "location": null,
+      "public_repos": 2,
+      "followers": 0,
+      "profile": "https://github.com/caleb-friesen",
+      "source": "contributor"
+    },
+    {
+      "username": "eDeveloperOZ",
+      "name": "Ofir Ozeri",
+      "email": null,
+      "company": null,
+      "bio": "Making robots work outside the lab.",
+      "twitter": "0fir0z",
+      "blog": "",
+      "location": "Israel",
+      "public_repos": 22,
+      "followers": 42,
+      "profile": "https://github.com/eDeveloperOZ",
+      "source": "forker"
+    },
+    {
+      "username": "humanoidlm",
+      "name": "HumanoidLM",
+      "email": null,
+      "company": null,
+      "bio": null,
+      "twitter": null,
+      "blog": "",
+      "location": null,
+      "public_repos": 1,
+      "followers": 0,
+      "profile": "https://github.com/humanoidlm",
+      "source": "forker"
+    },
+    {
+      "username": "ilessiorobotflowlabs",
+      "name": "Igor Lessio - RobotFlowLabs",
+      "email": null,
+      "company": "AIFLOW LABS LIMITED",
+      "bio": null,
+      "twitter": null,
+      "blog": "",
+      "location": "Hong Kong",
+      "public_repos": 1,
+      "followers": 0,
+      "profile": "https://github.com/ilessiorobotflowlabs",
+      "source": "forker"
+    },
+    {
+      "username": "kingjulio8238",
+      "name": "kingJulio",
+      "email": null,
+      "company": null,
+      "bio": "Moving up the Kardashev scale ",
+      "twitter": null,
+      "blog": "",
+      "location": "San Francisco, California, USA ",
+      "public_repos": 23,
+      "followers": 56,
+      "profile": "https://github.com/kingjulio8238",
+      "source": "contributor"
+    },
+    {
+      "username": "oskarglauser",
+      "name": "Oskar Glauser",
+      "email": null,
+      "company": "Glauser Creative",
+      "bio": "Designer who builds",
+      "twitter": "oskargla",
+      "blog": "www.glauser.com",
+      "location": "Stockholm",
+      "public_repos": 7,
+      "followers": 5,
+      "profile": "https://github.com/oskarglauser",
+      "source": "forker"
+    }
+  ],
+  "git_log_emails": [
+    {
+      "name": "kingjulio8238",
+      "email": "juliansaks@utexas.edu",
+      "source": "git-log"
+    },
+    {
+      "name": "archerlinn",
+      "email": "archerlin0530@gmail.com",
+      "source": "git-log"
+    },
+    {
+      "name": "Thomas Burgess",
+      "email": "thomasburgess2000@gmail.com",
+      "source": "git-log"
+    },
+    {
+      "name": "ofir ozeri",
+      "email": "ofiroz91@gmail.com",
+      "source": "git-log"
+    },
+    {
+      "name": "Oskar Glauser",
+      "email": "oskar@glauser.com",
+      "source": "git-log"
+    }
+  ],
+  "summary": {
+    "total_users": 12,
+    "with_email": 0,
+    "git_log_emails": 5
+  }
+}

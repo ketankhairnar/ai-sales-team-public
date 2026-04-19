@@ -1,0 +1,46 @@
+---
+import type { PipelineEvent } from '../dsl/envelope'
+import HandoffChip from './HandoffChip.astro'
+
+const { events } = Astro.props as { events: Array<PipelineEvent & { id: number }> }
+
+const PERSONA_SHORT: Record<string, string> = {
+  'VPSales-Vikram': 'Vikram',
+  'SDR-Siddharth': 'Siddharth',
+  'AE-Arjun': 'Arjun',
+  'SE-Shreya': 'Shreya',
+  'CSM-Kavya': 'Kavya',
+  'Editor-Esha': 'Esha',
+  'Skeptic-Shruti': 'Shruti',
+}
+
+function interpret(e: any): { who: string; chip: { kind: 'pass'|'revise'|'reject'|'human'|'handoff'; verb: string } | null; text: string } {
+  const persona = e.attempt?.maker?.persona
+  const who = persona ? (PERSONA_SHORT[persona] ?? persona) : 'system'
+
+  if (e.kind === 'stage_advance') return { who, chip: null, text: `${e.from ?? '·'} → ${e.to}` }
+  if (e.kind === 'stage_start')   return { who, chip: null, text: `start ${e.stage_id}` }
+  if (e.kind === 'stage_pass')    return { who, chip: { kind: 'pass', verb: `${e.stage_id} ✓` }, text: '' }
+  if (e.kind === 'stage_reject')  return { who, chip: { kind: 'reject', verb: `${e.stage_id}` }, text: (e.reason ?? '').slice(0, 140) }
+  if (e.kind === 'attempt')       return { who, chip: null, text: `${e.stage_id} iter ${e.attempt?.iter ?? '?'}` }
+  if (e.kind === 'human_input')   return { who: e.input?.author?.name ?? 'human', chip: { kind: 'human', verb: e.input?.kind ?? 'input' }, text: '' }
+  return { who, chip: null, text: String(e.kind) }
+}
+---
+<div class="border border-border bg-bg max-h-96 overflow-y-auto">
+  {events.length === 0 && <div class="mono text-xs text-muted-fg p-3">no events</div>}
+  {events.slice().reverse().map((e, idx) => {
+    const t = ('at' in e && e.at) ? new Date(e.at).toISOString().slice(11, 19) : ''
+    const pid = ('prospect_id' in e) ? ((e.prospect_id ?? '').split('/').pop() ?? '') : ''
+    const info = interpret(e)
+    return (
+      <div class={`activity-line ${idx === 0 ? 'activity-line-new' : ''}`}>
+        <time>{t}</time>
+        <span class="font-semibold">{info.who}</span>
+        {pid && <span class="mono text-muted-fg ml-2">{pid.slice(0, 22)}</span>}
+        {info.chip && <span class="ml-2"><HandoffChip kind={info.chip.kind} verb={info.chip.verb} /></span>}
+        {info.text && <span class="ml-2 text-muted-fg">{info.text}</span>}
+      </div>
+    )
+  })}
+</div>

@@ -1,0 +1,53 @@
+app = 'ai-sales-team-33831'
+primary_region = 'sin'
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
+
+[build]
+
+[env]
+  NODE_ENV = 'production'
+  HOST = '0.0.0.0'
+  PORT = '3000'
+  DB_PATH = '/data/app.db'
+  PROVIDER = 'anthropic'
+  FROM_EMAIL = 'onboarding@resend.dev'
+  TO_EMAIL = 'ketan@basaltconsulting.in'
+  DISCOVER_MODE = 'apollo-mock-people'
+  LIVE_RESEARCH = '0'
+  MAX_LI_HITS = '0'
+  WORKER_MODE = '1'
+
+[processes]
+  app = 'node ./dist/server/entry.mjs'
+
+[[mounts]]
+  source = 'data'
+  destination = '/data'
+  processes = ['app']
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+  [http_service.concurrency]
+    type = 'connections'
+    hard_limit = 100
+    soft_limit = 75
+
+  [[http_service.checks]]
+    grace_period = '30s'
+    interval = '30s'
+    method = 'GET'
+    timeout = '10s'
+    path = '/'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
